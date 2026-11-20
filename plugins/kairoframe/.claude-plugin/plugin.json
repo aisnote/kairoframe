@@ -1,8 +1,21 @@
 {
   "name": "kairoframe",
   "version": "0.1.0",
-  "description": "Make and render videos from HTML with KairoFrame, a fast native renderer for the Hyperframes project format (Windows 64-bit).",
-  "author": { "name": "KairoFrame" },
+  "description": "Fast native video renderer: HTML / Hyperframes projects, any web page or built site, video clips, pictures and sound to MP4, MOV, WebM, GIF or HLS, with audio effects, HDR and GPU encoding (Windows 64-bit).",
+  "author": {
+    "name": "KairoFrame"
+  },
   "homepage": "https://github.com/aisnote/kairoframe",
-  "keywords": ["video", "html", "render", "hyperframes", "gsap", "motion-graphics"]
+  "keywords": [
+    "video",
+    "html",
+    "render",
+    "hyperframes",
+    "gsap",
+    "motion-graphics",
+    "web-page",
+    "audio",
+    "compose",
+    "hdr"
+  ]
 }

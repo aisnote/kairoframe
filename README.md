@@ -1,10 +1,17 @@
 # KairoFrame for Claude Code
 
-KairoFrame turns HTML into video: a folder with an `index.html` (plain HTML and CSS, timed by `data-` attributes,
-animated by a paused GSAP timeline, the [Hyperframes](https://github.com/heygen-com/hyperframes) project format) is
-rendered to MP4, MOV, WebM, GIF, PNG frames or HLS. It is a single native program, typically about 5x faster than
-Hyperframes on the same project. This repository holds the Claude Code plugin and the Windows binaries; the source code
-is not published.
+KairoFrame is a fast, native video renderer. It turns
+
+- **HTML projects**: a folder with an `index.html` (plain HTML and CSS, timed by `data-` attributes, animated by a
+  paused GSAP timeline, the [Hyperframes](https://github.com/heygen-com/hyperframes) project format), with the video
+  clips, pictures and **sound** they place: music, voice-over, sound effects, with volume curves, speed changes and a
+  chain of audio effects (EQ, compressor, limiter, reverb, delay, ...);
+- **any web page or built site** (React, Vue, plain HTML), recorded frame by frame on a virtual clock;
+- **video clips and pictures**, stacked in layers and joined segment after segment (`kairoframe compose`)
+
+into **MP4, MOV (ProRes), WebM, GIF, PNG frames or HLS**, optionally in HDR (HDR10 or HLG) and with the graphics card's
+H.264 encoder. It is a single program, typically about 5x faster than Hyperframes on the same project. This repository
+holds the Claude Code plugin and the Windows binaries; the source code is not published.
 
 **Platform:** Windows 10/11, 64-bit. Other platforms later.
 

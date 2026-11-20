@@ -1,13 +1,14 @@
 ---
 name: kairoframe
-description: Make, edit, check and render videos from HTML with KairoFrame (HTML + CSS + a paused GSAP timeline, rendered to MP4, MOV, WebM, GIF, PNG frames or HLS), and render existing Hyperframes projects several times faster. Use when the user asks to create a video, motion graphic, animated title, lower third, product promo, social clip or slideshow, to turn a web page or HTML into a video, to recreate or recompose a video as HTML, or to render a Hyperframes project. Windows 64-bit.
+description: Make, edit, check and render videos with KairoFrame, a fast native renderer. Inputs are HTML projects (HTML + CSS + a paused GSAP timeline, the Hyperframes format) with their footage, pictures and sound (music, voice-over, effects, volume curves, audio effect chains); any web page or built site (React, Vue, plain HTML) recorded on a virtual clock; and video clips and pictures stacked and joined into one film. Outputs are MP4, MOV, WebM, GIF, PNG frames or HLS, optionally HDR. Use when the user asks to create or edit a video, motion graphic, animated title, lower third, product promo, social clip or slideshow, to add music or voice-over, to turn a web page, app or slide deck into a video, to join clips and pictures, to recreate a video as HTML, or to render a Hyperframes project. Windows 64-bit.
 ---
 
-# KairoFrame: HTML to video
+# KairoFrame: HTML, web pages, footage, pictures and sound to video
 
 KairoFrame renders a folder holding an `index.html` (the Hyperframes project format: plain HTML timed by `data-`
-attributes and animated by a paused GSAP timeline) to a video file. It is a single native program; a Hyperframes project
-renders as it is.
+attributes and animated by a paused GSAP timeline) to a video file, with the footage, pictures and sound it places.
+`kairoframe compose` also records any web page or built site and joins video clips and pictures into one film (section
+6). It is a single native program; a Hyperframes project renders as it is.
 
 **Command name:** always run it as `kairoframe`. Text the program prints (its help, `docs`, check findings, hints) and
 the files `kairoframe init` writes may show the command under the engine's internal name: read every such command as
@@ -64,7 +65,57 @@ different values. `kairoframe render --help` lists all.
 Every command takes `--json` (one JSON document on stdout). Exit codes: 0 done, 1 failed, 2 wrong usage, 3 check or lint
 found errors. A failure is `{"ok": false, "error": {"code", "message", "hint"}}`: follow the hint.
 
-## 5. Recreating an existing video as HTML
+## 5. Sound
+
+Sound comes from `<audio>` elements and from `<video data-has-audio="true">` (other videos are silent). Any format
+ffmpeg reads works (mp3, wav, m4a/aac, ogg, flac, ...); put the files in `assets/`.
+
+```html
+<audio src="assets/music.mp3" data-start="0" data-duration="12" data-volume="0.4" data-fade-in="0.5" data-fade-out="1.5"></audio>
+<audio src="assets/voice.wav" data-start="1.2" data-media-start="3" data-duration="8"></audio>
+```
+
+- `data-media-start` trims the start of the file; `data-volume` (0 to 1), `data-fade-in`, `data-fade-out` in seconds.
+- `data-automation` moves volume or speed over time (speed keeps the pitch); `data-fx-chain` applies effects such as
+  EQ, compressor, limiter, gate, reverb, delay, chorus, pitch shift; clips with `data-audio-group` are mixed and
+  processed together. `kairoframe docs` ("Sound and footage") has the exact JSON for these.
+- The rendered MP4, MOV and WebM carry the mixed sound track.
+
+## 6. Web pages, video clips and pictures: `kairoframe compose`
+
+`kairoframe compose spec.json --json` renders a film of **segments played one after the other**, each a **stack of
+layers**: a `page` (any built site or web page, served from a local folder), a `video` file, or an `image` (PNG with
+alpha). Everything is composited in memory and encoded once.
+
+```json
+{
+  "version": 1, "width": 1920, "height": 1080, "fps": 30,
+  "output": "C:/work/out/film.mp4", "timing": "C:/work/out/timing.json",
+  "segments": [
+    { "name": "intro", "duration": null, "layers": [ { "type": "video", "src": "C:/work/intro.mp4" } ] },
+    { "name": "demo", "duration": 12,
+      "layers": [
+        { "type": "page", "root": "C:/work/site/dist", "entry": "index.html", "query": "demo=1",
+          "ready_selector": "#app", "duration": 12 },
+        { "type": "video", "src": "C:/work/presenter.mp4", "crop": { "x": "center", "y": 0, "w": 720, "h": 720 },
+          "resize": { "w": 360, "h": 360 }, "x": 1500, "y": 660 },
+        { "type": "image", "src": "C:/work/logo.png", "x": 60, "y": 40 } ] }
+  ]
+}
+```
+
+- All paths absolute. The first layer of a segment must cover the whole frame. `"duration": null` = the length of the
+  segment's first layer (a video). A layer that ends holds its last frame until the segment ends.
+- A `page` layer runs its timers, `requestAnimationFrame`, `Date` and CSS animations on a virtual clock that moves to each
+  frame's time, so its animation is exact; `init_script` runs before the page's own scripts (seed localStorage, set
+  flags), and the page counts from 0 once `ready_selector` exists and the fonts are loaded.
+- `video` layers are decoded natively: `crop`, then `resize`, then an optional grayscale `mask` PNG; `x`, `y` place them.
+- The output is **picture only**. The timing file gives each segment's start frame; to add sound, put the film in an
+  HTML project as a `<video>` with `<audio>` beside it, or mux a sound track with ffmpeg
+  (`ffmpeg -i film.mp4 -i sound.m4a -c:v copy -c:a aac -shortest out.mp4`).
+- `--dry-run` checks the spec and writes the timing file without rendering.
+
+## 7. Recreating an existing video as HTML
 
 Download the source (for a post on X, `https://api.fxtwitter.com/<user>/status/<id>` gives the video URLs), take a contact
 sheet with ffmpeg (`ffmpeg -i in.mp4 -vf "fps=2,scale=240:-1,tile=8x5" sheet.png`, the ffmpeg in KairoFrame's

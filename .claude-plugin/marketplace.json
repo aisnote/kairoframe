@@ -1,12 +1,16 @@
 {
   "name": "kairoframe",
-  "owner": { "name": "KairoFrame" },
-  "metadata": { "description": "KairoFrame for Claude Code: HTML to video, fast." },
+  "owner": {
+    "name": "KairoFrame"
+  },
+  "metadata": {
+    "description": "KairoFrame for Claude Code: HTML, web pages, video, pictures and sound to video, fast."
+  },
   "plugins": [
     {
       "name": "kairoframe",
       "source": "./plugins/kairoframe",
-      "description": "Make and render videos from HTML with KairoFrame (Hyperframes project format, Windows 64-bit).",
+      "description": "Fast native video renderer: HTML / Hyperframes projects, any web page or built site, video clips, pictures and sound to MP4, MOV, WebM, GIF or HLS, with audio effects, HDR and GPU encoding (Windows 64-bit).",
       "version": "0.1.0"
     }
   ]
