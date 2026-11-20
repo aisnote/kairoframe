@@ -10,8 +10,8 @@
     {
       "name": "kairoframe",
       "source": "./plugins/kairoframe",
-      "description": "Fast native video renderer: HTML / Hyperframes projects, any web page or built site, video clips, pictures and sound to MP4, MOV, WebM, GIF or HLS, with audio effects, HDR and GPU encoding (Windows 64-bit).",
-      "version": "0.1.0"
+      "description": "Fast native video renderer: HTML / Hyperframes projects, any web page or built site, video clips, pictures and sound to MP4, MOV, WebM, GIF or HLS, with audio effects, HDR and GPU encoding (Windows 64-bit, Linux x86-64).",
+      "version": "0.1.1"
     }
   ]
 }

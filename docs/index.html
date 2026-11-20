@@ -136,9 +136,13 @@
       <div class="label">Install on Windows 10/11 (64-bit): paste into cmd, PowerShell or Git Bash</div>
       <div class="cmd"><code id="one"><b>powershell</b> -NoProfile -ExecutionPolicy Bypass -Command "irm https://raw.githubusercontent.com/aisnote/kairoframe/main/install.ps1 | iex"</code>
         <button class="copy" data-copy="one">Copy</button></div>
+      <div class="label" style="margin-top:14px">Install on Linux (x86-64): paste into a terminal</div>
+      <div class="cmd"><code id="two"><b>curl</b> -fsSL https://raw.githubusercontent.com/aisnote/kairoframe/main/install.sh | bash</code>
+        <button class="copy" data-copy="two">Copy</button></div>
     </div>
     <div class="ctas">
       <a class="btn primary" href="https://github.com/aisnote/kairoframe/releases/latest">Download for Windows</a>
+      <a class="btn" href="https://github.com/aisnote/kairoframe/releases/tag/v0.1.1">Download for Linux</a>
       <a class="btn" href="https://github.com/aisnote/kairoframe">View on GitHub</a>
     </div>
     <div class="video"><video src="demo.mp4" poster="poster.jpg" controls muted autoplay loop playsinline preload="metadata"></video></div>
@@ -225,16 +229,17 @@
  for my app with three
  feature cards"</pre></div>
       <div class="agent"><h3>Gemini CLI &amp; others</h3><p>A section in <code>~/.gemini/GEMINI.md</code>. Any other agent: point it at the skill file.</p>
-<pre>%LOCALAPPDATA%\KairoFrame\SKILL.md</pre></div>
+<pre>%LOCALAPPDATA%\KairoFrame\SKILL.md
+~/.local/share/kairoframe/SKILL.md</pre></div>
     </div>
   </section>
 
   <section id="req">
     <h2>Requirements</h2>
     <div class="req">
-      <div><b>Windows 10 or 11, 64-bit</b>Other platforms later. About 250 MB on disk with ffmpeg and the headless browser the installer fetches.</div>
+      <div><b>Windows 10/11 64-bit, or Linux x86-64</b>Linux: glibc 2.38 or newer (Ubuntu 24.04, Debian 13, Fedora 39+) and an AVX2 CPU. About 250 MB on disk with ffmpeg and the headless browser the installer fetches.</div>
       <div><b>Graphics card optional</b>NVIDIA, Intel or AMD H.264 encoders are used when present; otherwise x264 on the CPU.</div>
-      <div><b>Free to use</b>The binaries are free; the source code is not published. Third-party parts keep their licenses (LGPL DLLs you can replace).</div>
+      <div><b>Free to use</b>The binaries are free; the source code is not published. Third-party parts keep their licenses (LGPL libraries you can replace).</div>
       <div><b>Fonts</b>Families named in CSS are fetched from Google Fonts on first use, so a project looks the same on every machine.</div>
     </div>
   </section>

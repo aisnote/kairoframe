@@ -1,6 +1,6 @@
 ---
 name: kairoframe
-description: Make, edit, check and render videos with KairoFrame, a fast native renderer. Inputs are HTML projects (HTML + CSS + a paused GSAP timeline, the Hyperframes format) with their footage, pictures and sound (music, voice-over, effects, volume curves, audio effect chains); any web page or built site (React, Vue, plain HTML) recorded on a virtual clock; and video clips and pictures stacked and joined into one film. Outputs are MP4, MOV, WebM, GIF, PNG frames or HLS, optionally HDR. Use when the user asks to create or edit a video, motion graphic, animated title, lower third, product promo, social clip or slideshow, to add music or voice-over, to turn a web page, app or slide deck into a video, to join clips and pictures, to recreate a video as HTML, or to render a Hyperframes project. Windows 64-bit.
+description: Make, edit, check and render videos with KairoFrame, a fast native renderer. Inputs are HTML projects (HTML + CSS + a paused GSAP timeline, the Hyperframes format) with their footage, pictures and sound (music, voice-over, effects, volume curves, audio effect chains); any web page or built site (React, Vue, plain HTML) recorded on a virtual clock; and video clips and pictures stacked and joined into one film. Outputs are MP4, MOV, WebM, GIF, PNG frames or HLS, optionally HDR. Use when the user asks to create or edit a video, motion graphic, animated title, lower third, product promo, social clip or slideshow, to add music or voice-over, to turn a web page, app or slide deck into a video, to join clips and pictures, to recreate a video as HTML, or to render a Hyperframes project. Windows 64-bit and Linux x86-64.
 ---
 
 # KairoFrame: HTML, web pages, footage, pictures and sound to video
@@ -16,14 +16,22 @@ the files `kairoframe init` writes may show the command under the engine's inter
 
 ## 1. Make sure KairoFrame is installed
 
-Run `kairoframe doctor`. If the command is not found, try `%LOCALAPPDATA%\KairoFrame\bin\kairoframe.exe doctor`
-(in Git Bash `"$LOCALAPPDATA/KairoFrame/bin/kairoframe.exe" doctor`). If neither exists, install it with the script
-next to this file. It downloads KairoFrame, ffmpeg and a headless Chrome (about 250 MB) into
-`%LOCALAPPDATA%\KairoFrame` and adds it to the user's PATH:
+Run `kairoframe doctor`. If the command is not found, try the installed program by its full path:
+
+- Windows: `%LOCALAPPDATA%\KairoFrame\bin\kairoframe.exe doctor` (in Git Bash `"$LOCALAPPDATA/KairoFrame/bin/kairoframe.exe" doctor`)
+- Linux: `~/.local/share/kairoframe/bin/kairoframe doctor`
+
+If it is not there, install it with the script next to this file. It downloads KairoFrame, ffmpeg and a headless
+Chrome (about 250 MB) and puts the program on the user's PATH:
 
 ```
+# Windows: into %LOCALAPPDATA%\KairoFrame
 powershell -NoProfile -ExecutionPolicy Bypass -File "<this skill's folder>\scripts\install.ps1"
+# Linux (x86-64, glibc 2.38+): into ~/.local/share/kairoframe, linked as ~/.local/bin/kairoframe
+bash "<this skill's folder>/scripts/install.sh"
 ```
+
+On Linux the script lists any system libraries the headless browser is missing, with the command that installs them.
 
 Until a new terminal picks up the PATH, call it by its full path. `doctor` must print `ok` for the browser before
 rendering. Running the script again updates KairoFrame.
