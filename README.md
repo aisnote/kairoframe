@@ -1,5 +1,6 @@
 # KairoFrame for Claude Code
-n**Website and demo video: https://aisnote.github.io/kairoframe/**
+
+**Website and demo video: https://aisnote.github.io/kairoframe/**
 
 KairoFrame is a fast, native video renderer. It turns
 
