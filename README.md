@@ -8,6 +8,27 @@ is not published.
 
 **Platform:** Windows 10/11, 64-bit. Other platforms later.
 
+## Install for every agent: one line
+
+Copy this into a terminal (cmd, PowerShell or Git Bash) on Windows 10/11:
+
+```
+powershell -NoProfile -ExecutionPolicy Bypass -Command "irm https://raw.githubusercontent.com/aisnote/kairoframe/main/install.ps1 | iex"
+```
+
+It installs KairoFrame, ffmpeg and a headless Chrome (about 250 MB) into `%LOCALAPPDATA%\KairoFrame`, adds it to your
+PATH, and gives the KairoFrame skill to the coding agents on the machine:
+
+| Agent | What it gets |
+|---|---|
+| Claude Code | the skill in `%USERPROFILE%\.claude\skills\kairoframe` |
+| OpenAI Codex CLI | the skill in `%USERPROFILE%\.codex\skills\kairoframe` and a section in `%USERPROFILE%\.codex\AGENTS.md` |
+| Gemini CLI | a section in `%USERPROFILE%\.gemini\GEMINI.md` |
+| any other agent | point it at `%LOCALAPPDATA%\KairoFrame\SKILL.md` |
+
+Codex and Gemini are set up only when they are installed (their folder exists). Run the same line again to update.
+Then open your agent and ask for a video.
+
 ## Use it in Claude Code
 
 ```
@@ -16,18 +37,14 @@ is not published.
 /kairoframe:install
 ```
 
-`/kairoframe:install` downloads KairoFrame, ffmpeg and a headless Chrome (about 250 MB in all) into
+(the plugin way, for Claude Code only.) `/kairoframe:install` downloads KairoFrame, ffmpeg and a headless Chrome (about 250 MB in all) into
 `%LOCALAPPDATA%\KairoFrame` and adds it to your PATH. Then ask Claude for a video, for example: *"Make a 10-second
 1080x1080 product teaser for my app with three feature cards"*, or *"Render this Hyperframes project with KairoFrame"*.
 The plugin's skill tells Claude how to write the project, check it, look at it and render it.
 
-## Install without Claude Code
+## Install by hand
 
-```
-powershell -NoProfile -ExecutionPolicy Bypass -Command "iwr -UseBasicParsing https://raw.githubusercontent.com/aisnote/kairoframe/main/plugins/kairoframe/skills/kairoframe/scripts/install.ps1 -OutFile $env:TEMP\kairoframe-install.ps1; & $env:TEMP\kairoframe-install.ps1"
-```
-
-or download `kairoframe-win64-<version>.zip` from [Releases](https://github.com/aisnote/kairoframe/releases), unzip it,
+Download `kairoframe-win64-<version>.zip` from [Releases](https://github.com/aisnote/kairoframe/releases), unzip it,
 put an `ffmpeg.exe` (6.0 or newer) in an `ffmpeg` folder next to `kairoframe.exe` and the files of
 [chrome-headless-shell](https://googlechromelabs.github.io/chrome-for-testing/) next to it, and run `kairoframe doctor`.
 
