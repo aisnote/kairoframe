@@ -1,0 +1,13 @@
+{
+  "name": "kairoframe",
+  "owner": { "name": "KairoFrame" },
+  "metadata": { "description": "KairoFrame for Claude Code: HTML to video, fast." },
+  "plugins": [
+    {
+      "name": "kairoframe",
+      "source": "./plugins/kairoframe",
+      "description": "Make and render videos from HTML with KairoFrame (Hyperframes project format, Windows 64-bit).",
+      "version": "0.1.0"
+    }
+  ]
+}
