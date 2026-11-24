@@ -73,6 +73,16 @@ different values. `kairoframe render --help` lists all.
 Every command takes `--json` (one JSON document on stdout). Exit codes: 0 done, 1 failed, 2 wrong usage, 3 check or lint
 found errors. A failure is `{"ok": false, "error": {"code", "message", "hint"}}`: follow the hint.
 
+## 4b. Motion blur (KairoFrame's own effect)
+
+`data-kf-fx="motion-blur(samples: 8, shutter: 180)"` on an element blurs that element as it moves; the element must be
+`position: absolute` or `fixed` (`.clip` elements usually are). On the root element, or with
+`kairoframe render --fx "motion-blur(samples: 8)"`, the whole film is blurred, video clips included (`--fx none` turns it
+off). `samples` 2 to 64 (more is smoother; fast moves need 16 or more), `shutter` 1 to 360 degrees (180 = film look).
+Frames where nothing moves cost nothing extra; on an element it adds about 10% to a render, on the whole film about 2x.
+Look at a moving moment with `kairoframe frame --at <t>`: separate copies mean too few samples. `kairoframe docs`
+lists every effect and its parameters.
+
 ## 5. Sound
 
 Sound comes from `<audio>` elements and from `<video data-has-audio="true">` (other videos are silent). Any format
