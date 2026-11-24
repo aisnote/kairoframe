@@ -1,0 +1,193 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <title>city-after-dark</title>
+    <script src="https://cdn.jsdelivr.net/npm/gsap@3.14.2/dist/gsap.min.js"></script>
+    <style>
+      html, body { margin: 0; background: #000; }
+      #root { position: relative; overflow: hidden; background: #000; color: #fff; }
+      .clip { position: absolute; }
+
+      /* ---------- footage ---------- */
+      #push { position: absolute; inset: 0; transform-origin: 50% 52%; z-index: 1; }
+      #city { position: absolute; left: 0; top: 0; width: 1920px; height: 1080px; object-fit: cover; }
+      /* teal lifted into the darkest tones only: "lighten" leaves everything brighter than the tint alone */
+      #tealdark { left: 0; top: 0; width: 1920px; height: 1080px; z-index: 2;
+                  background: #03181d; mix-blend-mode: lighten; opacity: 0.9; }
+
+      /* ---------- letterbox (2.39:1 → 803 px picture, 138.5 px bars) ---------- */
+      .bar { left: 0; width: 1920px; height: 139px; background: #000; z-index: 20; }
+      #barTop { top: 0; }
+      #barBot { bottom: 0; }
+
+      /* ---------- HUD ---------- */
+      #hud { left: 0; top: 0; width: 1920px; height: 1080px; z-index: 10;
+             font-family: "JetBrains Mono", monospace; color: rgba(235, 242, 245, 0.72);
+             font-size: 24px; letter-spacing: 0.08em; text-shadow: 0 0 6px rgba(0, 0, 0, 0.6); }
+      .brk { position: absolute; width: 56px; height: 56px; border-color: rgba(235, 242, 245, 0.55); border-style: solid; border-width: 0; }
+      #bTL { left: 150px; top: 180px; border-left-width: 2px; border-top-width: 2px; }
+      #bTR { right: 150px; top: 180px; border-right-width: 2px; border-top-width: 2px; }
+      #bBL { left: 150px; bottom: 180px; border-left-width: 2px; border-bottom-width: 2px; }
+      #bBR { right: 150px; bottom: 180px; border-right-width: 2px; border-bottom-width: 2px; }
+      #rec { position: absolute; left: 232px; top: 190px; display: flex; align-items: center; gap: 12px; }
+      #recDot { width: 14px; height: 14px; border-radius: 50%; background: #ff3b30; box-shadow: 0 0 10px rgba(255, 59, 48, 0.7); }
+      #tc { position: absolute; right: 232px; top: 190px; text-align: right; }
+      #alt { position: absolute; left: 232px; bottom: 192px; }
+      #gps { position: absolute; right: 232px; bottom: 192px; text-align: right; }
+      #compass { position: absolute; left: 660px; top: 176px; width: 600px; height: 52px; overflow: hidden;
+                 -webkit-mask-image: linear-gradient(90deg, transparent, #000 22%, #000 78%, transparent);
+                         mask-image: linear-gradient(90deg, transparent, #000 22%, #000 78%, transparent); }
+      #strip { position: absolute; left: 0; top: 0; height: 52px; }
+      .tick { position: absolute; top: 0; width: 1px; height: 10px; background: rgba(235, 242, 245, 0.55); }
+      .tick.major { height: 18px; width: 2px; }
+      .lab { position: absolute; top: 20px; font-size: 24px; transform: translateX(-50%); color: rgba(235, 242, 245, 0.75); }
+      #needle { position: absolute; left: 959px; top: 172px; width: 0; height: 0;
+                border-left: 7px solid transparent; border-right: 7px solid transparent; border-top: 9px solid rgba(255, 196, 120, 0.9); }
+
+      /* ---------- title ---------- */
+      #titleWrap { left: 0; top: 388px; width: 1920px; z-index: 12; text-align: center; }
+      .ttl { position: relative; margin: 0; font-family: "Barlow Condensed", sans-serif; font-weight: 300;
+             font-size: 176px; line-height: 1; letter-spacing: 0.55em; padding-left: 0.55em;
+             white-space: nowrap; text-transform: uppercase; }
+      #titleWrap .ttl { filter: drop-shadow(0 2px 14px rgba(0, 0, 0, 0.55)); }
+      /* each letter is painted by its background (clipped to the glyph): a base colour plus a moving light band */
+      .ttl span { display: inline-block; color: transparent;
+                  background-color: rgba(232, 224, 212, 0.78);
+                  background-image: linear-gradient(105deg, rgba(255, 236, 200, 0) 0%, rgba(255, 226, 176, 0.9) 38%, #fffdf8 50%, rgba(255, 226, 176, 0.9) 62%, rgba(255, 236, 200, 0) 100%);
+                  background-size: 300px 100%; background-repeat: no-repeat; background-position: -2000px 0;
+                  -webkit-background-clip: text; background-clip: text; }
+      #sub { left: 0; top: 600px; width: 1920px; z-index: 12; margin: 0; text-align: center;
+             font-family: "Barlow Condensed", sans-serif; font-weight: 400; font-size: 44px; letter-spacing: 0.24em;
+             color: rgba(240, 236, 228, 0.82); text-shadow: 0 0 14px rgba(0, 0, 0, 0.85), 0 2px 4px rgba(0, 0, 0, 0.6); }
+
+      /* ---------- credit ---------- */
+      #credit { left: 0; bottom: 176px; width: 1920px; z-index: 12; margin: 0; text-align: center;
+                font-family: "Barlow Condensed", sans-serif; font-weight: 400; font-size: 28px; letter-spacing: 0.18em;
+                color: rgba(240, 236, 228, 0.8); white-space: pre;
+                text-shadow: 0 0 12px rgba(0, 0, 0, 0.9), 0 1px 3px rgba(0, 0, 0, 0.7); }
+    </style>
+  </head>
+  <body>
+    <div id="root" data-composition-id="main" data-start="0" data-width="1920" data-height="1080" data-duration="12">
+
+      <div id="push" class="clip" data-start="0" data-duration="12">
+        <video id="city" src="assets/city.mp4" muted data-start="0" data-duration="12"
+               data-color-grading='{"adjust": {"exposure": -0.1, "contrast": 0.22, "shadows": -0.35, "blacks": -0.25,
+                                               "highlights": 0.1, "temperature": 0.14, "tint": -0.04, "saturation": -0.05},
+                                    "details": {"vignette": 0.45}, "intensity": 1}'></video>
+      </div>
+      <div id="tealdark" class="clip" data-start="0" data-duration="12"></div>
+
+      <div id="hud" class="clip" data-start="1.5" data-duration="10.5">
+        <div class="brk" id="bTL"></div><div class="brk" id="bTR"></div>
+        <div class="brk" id="bBL"></div><div class="brk" id="bBR"></div>
+        <div id="rec"><div id="recDot"></div><span>REC</span></div>
+        <div id="tc">23:40:00</div>
+        <div id="alt">ALT 412 m</div>
+        <div id="gps">HDG 000°</div>
+        <div id="compass"><div id="strip"></div></div>
+        <div id="needle"></div>
+      </div>
+
+      <div id="titleWrap" class="clip" data-start="3" data-duration="7">
+        <h1 class="ttl" id="title"></h1>      </div>
+      <p id="sub" class="clip" data-start="4" data-duration="6">A city that never switches off</p>
+
+      <p id="credit" class="clip" data-start="10" data-duration="2">Footage: Kelly on Pexels  ·  Rendered with KairoFrame</p>
+
+      <div id="barTop" class="bar clip" data-start="0" data-duration="12"></div>
+      <div id="barBot" class="bar clip" data-start="0" data-duration="12"></div>
+    </div>
+    <script>
+      window.__timelines = window.__timelines || {};
+      const tl = gsap.timeline({ paused: true });
+      const pad = (n) => String(n).padStart(2, "0");
+
+      // title letters
+      const title = document.getElementById("title");
+      const letters = "AFTER DARK".split("").map((ch) => {
+        const s = document.createElement("span");
+        s.textContent = ch === " " ? " " : ch;
+        title.appendChild(s);
+        return s;
+      });
+      // light sweep: a band at x (px, in the title's own box) placed on each letter's background
+      const sweep = { x: -600 };
+      const drawSweep = () => {
+        letters.forEach((s) => {
+          s.style.backgroundPosition = (sweep.x - s.offsetLeft - 150) + "px 0";
+        });
+      };
+
+      // compass strip: 5° ticks, labels every 45°, two full turns so it can drift either way
+      const strip = document.getElementById("strip");
+      const PX_PER_DEG = 6;
+      const names = { 0: "N", 45: "NE", 90: "E", 135: "SE", 180: "S", 225: "SW", 270: "W", 315: "NW" };
+      for (let d = 255; d <= 425; d += 5) {
+        const x = (d + 360) * PX_PER_DEG;
+        const t = document.createElement("div");
+        const m = ((d % 360) + 360) % 360;
+        t.className = "tick" + (m % 45 === 0 ? " major" : "");
+        t.style.left = x + "px";
+        strip.appendChild(t);
+        if (m % 45 === 0) {
+          const l = document.createElement("div");
+          l.className = "lab";
+          l.style.left = x + "px";
+          l.textContent = names[m];
+          strip.appendChild(l);
+        }
+      }
+      const COMPASS_HALF = 300;
+      const setHeading = (deg) => {
+        gsap.set(strip, { x: COMPASS_HALF - (deg + 360) * PX_PER_DEG });
+        document.getElementById("gps").textContent = "HDG " + String(Math.round(((deg % 360) + 360) % 360)).padStart(3, "0") + "°";
+      };
+
+      // ---- footage push-in
+      tl.fromTo("#push", { scale: 1.0 }, { scale: 1.08, duration: 12, ease: "none" }, 0);
+
+      // ---- letterbox
+      tl.fromTo("#barTop", { yPercent: -100 }, { yPercent: 0, duration: 1.1, ease: "power3.inOut" }, 0.4);
+      tl.fromTo("#barBot", { yPercent: 100 }, { yPercent: 0, duration: 1.1, ease: "power3.inOut" }, 0.4);
+
+      // ---- HUD
+      tl.fromTo("#hud", { opacity: 0 }, { opacity: 1, duration: 0.9, ease: "power1.out" }, 1.5);
+      tl.fromTo(".brk", { scale: 1.25 }, { scale: 1, duration: 0.9, ease: "power2.out" }, 1.5);
+      // REC dot blinks (finite repeats, all on the timeline)
+      tl.fromTo("#recDot", { opacity: 1 }, { opacity: 0.15, duration: 0.5, ease: "steps(1)", repeat: 10, yoyo: true }, 1.5);
+      // timecode 23:40:00 → 02:10:00 over the whole film (2.5 h in 12 s)
+      const clock = { s: 0 };
+      const tc = document.getElementById("tc");
+      const altEl = document.getElementById("alt");
+      const drawHud = () => {
+        const film = clock.s;                                   // film seconds 0..12
+        let secs = Math.floor(23 * 3600 + 40 * 60 + film * 9000 / 12) % 86400;
+        tc.textContent = pad(Math.floor(secs / 3600)) + ":" + pad(Math.floor(secs / 60) % 60) + ":" + pad(secs % 60);
+        const alt = 412 + 6 * Math.sin(film * 0.55) + film * 0.9;   // slow, smooth drift
+        altEl.textContent = "ALT " + Math.round(alt) + " m";
+        setHeading(318 + film * 4.2 + 3 * Math.sin(film * 0.4));    // compass drifts NW → N
+      };
+      tl.fromTo(clock, { s: 0 }, { s: 12, duration: 12, ease: "none", onUpdate: drawHud, immediateRender: true }, 0);
+      drawHud();
+
+      // ---- title
+      tl.fromTo(".ttl", { letterSpacing: "0.55em", paddingLeft: "0.55em" },
+                        { letterSpacing: "0.2em", paddingLeft: "0.2em", duration: 3.2, ease: "power3.out" }, 3);
+      tl.fromTo("#title span", { opacity: 0, filter: "blur(18px)" },
+                { opacity: 1, filter: "blur(0px)", duration: 1.3, ease: "power2.out", stagger: 0.09 }, 3);
+      tl.fromTo(sweep, { x: 100 }, { x: 1820, duration: 1.4, ease: "power1.inOut", onUpdate: drawSweep, immediateRender: false }, 5);
+      // subtitle
+      tl.fromTo("#sub", { opacity: 0, y: 10 }, { opacity: 1, y: 0, duration: 1.2, ease: "power2.out" }, 4);
+      // exit
+      tl.to("#titleWrap", { y: -40, opacity: 0, duration: 1.0, ease: "power2.in" }, 9);
+      tl.to("#sub", { y: -40, opacity: 0, duration: 1.0, ease: "power2.in" }, 9.08);
+
+      // ---- credit
+      tl.fromTo("#credit", { opacity: 0 }, { opacity: 1, duration: 0.8, ease: "power1.out" }, 10);
+
+      window.__timelines["main"] = tl;
+    </script>
+  </body>
+</html>
