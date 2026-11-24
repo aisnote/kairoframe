@@ -1,0 +1,200 @@
+<!--
+  Based on 'HTML5 canvas and javascript fireworks tutorial' by Hansi, https://codepen.io/Hansi/pen/qZwMrB, MIT License
+
+  Ported to a time-driven kairoframe film: the original 60 Hz animation loop is replayed with a fixed step from
+  film time 0 up to the requested frame, with a seeded random generator in place of Math.random and a
+  scripted launch schedule in place of clicks and the auto-launch timer.
+-->
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <title>fireworks</title>
+    <script src="https://cdn.jsdelivr.net/npm/gsap@3.14.2/dist/gsap.min.js"></script>
+    <style>
+      html, body { margin: 0; background: #000; }
+      #root { position: relative; overflow: hidden; background: #000; }
+      #canvas { position: absolute; left: 0; top: 0; width: 1920px; height: 1080px; display: block; z-index: 1; }
+      #credit {
+        position: absolute; right: 96px; bottom: 54px; margin: 0; z-index: 2;
+        font: 400 24px/1.2 "Inter", "Helvetica Neue", Arial, sans-serif;
+        color: rgba(255, 255, 255, 0.45); letter-spacing: 0.01em; white-space: nowrap;
+      }
+    </style>
+  </head>
+  <body>
+    <div id="root" data-composition-id="main" data-start="0" data-width="1920" data-height="1080" data-duration="12">
+      <canvas id="canvas" width="1920" height="1080"></canvas>
+      <p id="credit" class="clip" data-start="0" data-duration="12">HTML5 canvas and javascript fireworks tutorial — Hansi (CodePen, MIT)</p>
+    </div>
+    <script>
+      (function () {
+        var canvas = document.getElementById('canvas'),
+          ctx = canvas.getContext('2d'),
+          cw = 1920,
+          ch = 1080,
+          TICKS_PER_SECOND = 60,   // the original loop ran once per display frame, about 60 Hz
+          TRAIL_TICKS = 14;        // each tick halves what is on the canvas; 0.5^14 is invisible
+
+        // seeded generator (mulberry32) in place of Math.random
+        var seed;
+        function rand() {
+          seed = (seed + 0x6D2B79F5) | 0;
+          var t = Math.imul(seed ^ (seed >>> 15), 1 | seed);
+          t = (t + Math.imul(t ^ (t >>> 7), 61 | t)) ^ t;
+          return ((t ^ (t >>> 14)) >>> 0) / 4294967296;
+        }
+        function random(min, max) { return rand() * (max - min) + min; }
+
+        function calculateDistance(p1x, p1y, p2x, p2y) {
+          var xDistance = p1x - p2x, yDistance = p1y - p2y;
+          return Math.sqrt(xDistance * xDistance + yDistance * yDistance);
+        }
+
+        // ---- the show: tick -> list of targets (fractions of the frame) ----
+        var schedule = {};
+        function launchAt(seconds, fx, fy) {
+          var tick = Math.round(seconds * TICKS_PER_SECOND);
+          (schedule[tick] = schedule[tick] || []).push([fx, fy]);
+        }
+        // single launches (the original auto-launched one every 80 ticks, ~1.33 s)
+        launchAt(0.00, 0.50, 0.22);
+        launchAt(1.45, 0.26, 0.30);
+        launchAt(2.80, 0.74, 0.18);
+        launchAt(4.15, 0.40, 0.12);
+        launchAt(5.50, 0.82, 0.36);
+        launchAt(6.85, 0.16, 0.16);
+        launchAt(8.10, 0.60, 0.28);
+        // finale (last 3 s): like holding the mouse down, one launch per 5 ticks, random targets in the top half
+        // (null = random target chosen by the seeded generator during the simulation)
+        for (var s = 9.0; s <= 10.75; s += 5 / TICKS_PER_SECOND) launchAt(s, null, null);
+
+        // ---- simulation state ----
+        var fireworks, particles, hue;
+
+        function Firework(sx, sy, tx, ty) {
+          this.x = sx; this.y = sy;
+          this.sx = sx; this.sy = sy;
+          this.tx = tx; this.ty = ty;
+          this.distanceToTarget = calculateDistance(sx, sy, tx, ty);
+          this.distanceTraveled = 0;
+          this.coordinates = [];
+          this.coordinateCount = 3;
+          while (this.coordinateCount--) this.coordinates.push([this.x, this.y]);
+          this.angle = Math.atan2(ty - sy, tx - sx);
+          this.speed = 2;
+          this.acceleration = 1.05;
+          this.brightness = random(50, 70);
+          this.targetRadius = 1;
+        }
+        Firework.prototype.update = function (index) {
+          this.coordinates.pop();
+          this.coordinates.unshift([this.x, this.y]);
+          if (this.targetRadius < 8) this.targetRadius += 0.3; else this.targetRadius = 1;
+          this.speed *= this.acceleration;
+          var vx = Math.cos(this.angle) * this.speed,
+            vy = Math.sin(this.angle) * this.speed;
+          this.distanceTraveled = calculateDistance(this.sx, this.sy, this.x + vx, this.y + vy);
+          if (this.distanceTraveled >= this.distanceToTarget) {
+            createParticles(this.tx, this.ty);
+            fireworks.splice(index, 1);
+          } else {
+            this.x += vx;
+            this.y += vy;
+          }
+        };
+        Firework.prototype.draw = function () {
+          ctx.beginPath();
+          ctx.moveTo(this.coordinates[this.coordinates.length - 1][0], this.coordinates[this.coordinates.length - 1][1]);
+          ctx.lineTo(this.x, this.y);
+          ctx.strokeStyle = 'hsl(' + hue + ', 100%, ' + this.brightness + '%)';
+          ctx.stroke();
+          ctx.beginPath();
+          ctx.arc(this.tx, this.ty, this.targetRadius, 0, Math.PI * 2);
+          ctx.stroke();
+        };
+
+        function Particle(x, y) {
+          this.x = x; this.y = y;
+          this.coordinates = [];
+          this.coordinateCount = 5;
+          while (this.coordinateCount--) this.coordinates.push([this.x, this.y]);
+          this.angle = random(0, Math.PI * 2);
+          this.speed = random(1, 10);
+          this.friction = 0.95;
+          this.gravity = 1;
+          this.hue = random(hue - 20, hue + 20);
+          this.brightness = random(50, 80);
+          this.alpha = 1;
+          this.decay = random(0.015, 0.03);
+        }
+        Particle.prototype.update = function (index) {
+          this.coordinates.pop();
+          this.coordinates.unshift([this.x, this.y]);
+          this.speed *= this.friction;
+          this.x += Math.cos(this.angle) * this.speed;
+          this.y += Math.sin(this.angle) * this.speed + this.gravity;
+          this.alpha -= this.decay;
+          if (this.alpha <= this.decay) particles.splice(index, 1);
+        };
+        Particle.prototype.draw = function () {
+          ctx.beginPath();
+          ctx.moveTo(this.coordinates[this.coordinates.length - 1][0], this.coordinates[this.coordinates.length - 1][1]);
+          ctx.lineTo(this.x, this.y);
+          ctx.strokeStyle = 'hsla(' + this.hue + ', 100%, ' + this.brightness + '%, ' + this.alpha + ')';
+          ctx.stroke();
+        };
+
+        function createParticles(x, y) {
+          var particleCount = 30;
+          while (particleCount--) particles.push(new Particle(x, y));
+        }
+
+        // one tick of the original loop; drawing is skipped for ticks too old to show
+        function tick(n, drawIt) {
+          hue += 0.5;
+          if (drawIt) {
+            ctx.globalCompositeOperation = 'destination-out';
+            ctx.fillStyle = 'rgba(0, 0, 0, 0.5)';
+            ctx.fillRect(0, 0, cw, ch);
+            ctx.globalCompositeOperation = 'lighter';
+          }
+          var i = fireworks.length;
+          while (i--) { if (drawIt) fireworks[i].draw(); fireworks[i].update(i); }
+          i = particles.length;
+          while (i--) { if (drawIt) particles[i].draw(); particles[i].update(i); }
+          var launches = schedule[n];
+          if (launches) {
+            for (var k = 0; k < launches.length; k++) {
+              var tx = launches[k][0] === null ? random(0, cw) : launches[k][0] * cw;
+              var ty = launches[k][1] === null ? random(0, ch / 2) : launches[k][1] * ch;
+              fireworks.push(new Firework(cw / 2, ch, tx, ty));
+            }
+          }
+        }
+
+        // the picture at film time t: replay the loop from 0 with a fixed step
+        function draw(t) {
+          var last = Math.floor(t * TICKS_PER_SECOND + 1e-6);
+          seed = 20160326;
+          fireworks = [];
+          particles = [];
+          hue = 120;
+          ctx.globalCompositeOperation = 'source-over';
+          ctx.clearRect(0, 0, cw, ch);
+          ctx.lineWidth = 1;
+          for (var n = 0; n <= last; n++) tick(n, n > last - TRAIL_TICKS);
+        }
+
+        window.addEventListener('hf-seek', function (e) { draw(e.detail.time); });
+        draw(0);
+
+        window.__timelines = window.__timelines || {};
+        var tl = gsap.timeline({ paused: true });
+        tl.fromTo('#credit', { opacity: 0 }, { opacity: 1, duration: 0.8, ease: 'power1.out' }, 0.3);
+        tl.set({}, {}, 12);
+        window.__timelines['main'] = tl;
+      })();
+    </script>
+  </body>
+</html>

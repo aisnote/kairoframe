@@ -76,6 +76,7 @@ Work in this folder (a kairoframe project made by `kairoframe init`; read AGENTS
       <div class="step"><b>1. Install KairoFrame and Claude Code</b><pre>curl -fsSL https://raw.githubusercontent.com/aisnote/kairoframe/main/install.sh | bash</pre></div>
       <div class="step"><b>2. Start an empty project and save the prompt above as prompt.txt in it</b><pre>kairoframe init weather-vertical --size portrait --duration 12
 cd weather-vertical</pre></div>
+      
       <div class="step"><b>3. Let Claude write the film</b><pre>claude -p &quot;$(cat prompt.txt)&quot; --model opus \
   --permission-mode acceptEdits \
   --allowedTools &quot;Read,Write,Edit,Glob,Grep,Bash(kairoframe:*),Bash(ls:*)&quot;</pre></div>

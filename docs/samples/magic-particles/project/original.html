@@ -1,0 +1,155 @@
+<!DOCTYPE html>
+<html lang="en" >
+
+<head>
+  
+  <meta charset="UTF-8">
+  
+
+    <link rel="apple-touch-icon" type="image/png" href="https://cpwebassets.codepen.io/assets/favicon/apple-touch-icon-5ae1a0698dcc2402e9712f7d01ed509a57814f994c660df9f7a952f3060705ee.png" />
+
+    <meta name="apple-mobile-web-app-title" content="CodePen">
+
+    <link rel="icon" type="image/x-icon" href="https://cpwebassets.codepen.io/assets/favicon/favicon-aec34940fbc1a6e787974dcd360f2c6b63348d4b1f4e06c77743096d55480f33.ico" />
+
+    <link rel="mask-icon" type="image/x-icon" href="https://cpwebassets.codepen.io/assets/favicon/logo-pin-b4b4269c16397ad2f0f7a01bcdf513a1994f4c94b8af2f191c09eb0d601762b1.svg" color="#111" />
+
+
+
+  
+    <script src="https://cpwebassets.codepen.io/assets/common/stopExecutionOnTimeout-f07739098a39bd4e74ddd974652dac904146f33fdc1ecab356e8c809a05faccb.js"></script>
+
+
+  <title>Magic text</title>
+
+    <link rel="canonical" href="https://codepen.io/SarahC/pen/xXjEMP">
+  
+  
+  
+  
+<style>
+body {
+  margin: 0px;
+  padding: 0px;
+  overflow: hidden;
+  font-family: arial;
+  background: black;
+}
+
+.FPS{
+  color: #505050;
+  position: absolute;
+  z-index: 10;
+  top: 5px;
+  left: 5px;
+}
+</style>
+
+  <script>
+  window.console = window.console || function(t) {};
+</script>
+
+  
+  
+</head>
+
+<body translate="no">
+  <div id="fps" class="FPS"></div>
+<canvas id="content"></canvas>
+  
+    <script id="rendered-js" >
+var text = "Magic!";
+var gatherStep = 1;
+
+var fps = document.getElementById("fps");
+var fpsCount = 0;
+
+var canvas = document.getElementById("content");
+var ctx = canvas.getContext("2d");
+ctx.fillStyle = "#ffffff";
+var colorWhite = 255 << 24 | 255 << 16 | 255 << 8 | 255;
+var imageData = null;
+var pixels8 = null;
+var pixels32 = null;
+
+var height = 0;
+var width = 0;
+var particles = [];
+var scale = 0;
+var frame = 0;
+
+setInterval(fpsDisplay, 1000);
+
+function fpsDisplay() {
+  fps.innerText = "FPS: " + fpsCount;
+  fpsCount = 0;
+}
+
+function init() {
+  particles.length = 0;
+  height = window.innerHeight;
+  width = window.innerWidth;
+
+  canvas.height = height;
+  canvas.width = width;
+
+  var fontSize = Math.min(height, width) / 2.5;
+  ctx.font = fontSize + 'px Arial';
+  ctx.textAlign = 'center';
+  ctx.fillText(text, width / 2, height / 2 + fontSize / 4);
+
+  imageData = ctx.getImageData(0, 0, width, height);
+  pixels8 = imageData.data;
+  pixels32 = new Uint32Array(pixels8.buffer);
+
+  for (var x = 0; x < width; x += gatherStep) {
+    for (var y = 0; y < height; y += gatherStep) {
+      var color = pixels32[y * width + x];
+      if (color != 0) {
+        var color = 255 << 24 | ~~(Math.random() * 50) << 16 | ~~(Math.random() * 200) + 54 << 8 | ~~(Math.random() * 50);
+        particles.push({ x: x, y: y, color: color });
+      }
+    }
+  }
+}
+
+function animation() {
+  frame += .01;
+  scale = (Math.cos(frame * 1) + 1) * Math.max(width, height) / 1.8;
+  fpsCount += 1;
+  pixels32.fill(0);
+  for (var i = 0; i < particles.length; i++) {
+    var particle = particles[i];
+    var dX = scale * Math.cos(i + frame); // Store in array instead
+    var dY = scale * Math.sin(i + frame);
+    var xPart = ~~(particle.x + dX);
+    if (xPart >= 0 && xPart < width) {
+      var yPart = ~~(particle.y + dY);
+      if (yPart >= 0 && yPart < height) {
+        var ptr = yPart * width + xPart;
+        var color = particle.color;
+        //if( (~~(frame*300 + ptr*i) % 10) == 5) color = colorWhite;
+        if (Math.random() < 0.05) color = colorWhite; // Use better PRNG here...
+        pixels32[ptr] = color;
+        pixels32[ptr + 1] = color;
+        pixels32[ptr + width] = color;
+        pixels32[ptr + width + 1] = color;
+      }
+    }
+  }
+  ctx.putImageData(imageData, 0, 0);
+  requestAnimationFrame(animation);
+}
+
+
+init();
+window.onresize = init;
+
+animation();
+//# sourceURL=pen.js
+  </script>
+
+  
+</body>
+
+</html>
