@@ -1,6 +1,6 @@
-# ScreenCap（测试版）— 无鼠标录屏 + 鼠标/交互数据记录
+# ScreenCap（测试版）— 无鼠标录屏 + 鼠标/交互数据记录 + 自动成片
 
-Windows 原生录屏工具：录一整段**不含鼠标**的视频，同时把鼠标轨迹、点击、滚轮、光标形状、点击到的界面元素、声音都按同一条时间轴记录下来。后期加工（重绘平滑鼠标、点击处局部放大、跟随平移、剪掉或加速空闲片段）需要的数据都在里面。
+Windows 原生录屏工具：录一整段**不含鼠标**的视频，同时把鼠标轨迹、点击、滚轮、光标形状、点击到的界面元素、声音都按同一条时间轴记录下来。点「成片」就用这些数据自动剪辑出最终视频：点击处平滑放大、重绘平滑的鼠标、去掉空闲片段（由 KairoFrame 渲染）。
 
 技术栈：DXGI Desktop Duplication 截屏，Media Foundation 调显卡硬件编码（NVENC / Quick Sync / AMF），WIC 存 PNG，WASAPI 录音，UI Automation 识别控件。
 
@@ -8,7 +8,7 @@ Windows 原生录屏工具：录一整段**不含鼠标**的视频，同时把�
 
 Windows 10 2004+ / Windows 11，64 位。单文件 `screencap.exe`，不需要安装，不依赖其他 DLL。
 
-SHA-256: `4cabe55cb312fac12a311347a9101113a7071e1593cbf30d694789556c63b991`
+SHA-256: `68d87e0fa583685a994f98269b7a4f9af38b673831579bc053d0e60dd0e4ce58`
 
 **新机器上建议先跑一次自测**（会录真实屏幕，测试期间可以放点声音、对着麦克风说话）：
 
@@ -21,6 +21,8 @@ screencap.exe --selftest C:\temp\sc_test --seconds 15 --audio --keys
 - `first video_start` 里是 `"hardware":true`，也就是用的是显卡编码。
 - audio 部分两个 WAV 的峰值音量不是 0%。
 
+装好 KairoFrame 后，再试成片：`screencap.exe polish C:\temp\sc_test\session_...`（或者直接正常录一段，点「成片」）。
+
 ## 使用
 
 启动后屏幕右上角出现一个置顶小窗，它**不抢焦点**，**本身也不会被录进画面**：
@@ -31,6 +33,7 @@ screencap.exe --selftest C:\temp\sc_test --seconds 15 --audio --keys
 | 暂停 / 继续 | 暂停期间不录画面、不录声音、不记录事件 |
 | 结束 | 写完视频和数据后关闭本次录制 |
 | 录音: 开/关 | 同时录电脑声音和麦克风（可先打开再点「开始」） |
+| 成片 | 把刚录完的内容自动剪辑成最终视频（见下文「成片」） |
 | 目录 | 打开输出目录 |
 
 - **录哪个显示器**：点「开始」时前台窗口所在的显示器（控制小窗不抢焦点，所以就是你正在用的那个程序）。也可以在 ini 里用 `RecordMonitor=N` 固定第 N 个显示器。
@@ -42,6 +45,43 @@ screencap.exe --selftest C:\temp\sc_test --seconds 15 --audio --keys
 - **点击到的界面元素**：每次按下时，后台用 UI Automation 查出鼠标下那个控件的名称、类型、精确矩形和两层父元素。后期可以把镜头对准被点的按钮或输入框。只读名称，不读输入框内容。
 - **键盘活动**（默认关，`KeyboardActivity=1` 打开）：只记"什么时候按了键"，**不记是哪个键**；另外记录当前焦点元素的位置，可以做"打字时自动放大"。
 - 在控制小窗上的点击会被忽略。
+
+## 成片：自动剪辑成最终视频
+
+录完点「成片」，或者在命令行运行 `screencap.exe polish [录制目录]`（不写目录时用最新一次录制）。ScreenCap 会在录制目录里生成一个 KairoFrame 工程 `index.html`，直接引用录到的视频、光标图片和 WAV，不复制任何文件；然后调用 [KairoFrame](https://github.com/aisnote/kairoframe) 渲染出 `polished.mp4`。
+
+做了哪些处理：
+- **自动放大**：点击前约 0.6 秒平滑放大到 2 倍，对准被点的控件（用录到的控件矩形；没有就对准点击位置）。几秒内的连续点击算一个镜头，镜头会平移到每次点击的位置。鼠标走出画面时镜头会跟随，最后一次点击后约 1.4 秒缩回全屏。打开了键盘活动时，打字也会放大到输入框。镜头不会移出画面边缘。
+- **画质**：4K 录屏默认输出 1920×1080，所以 2 倍放大不损失清晰度。
+- **重绘鼠标**：用录到的真实光标图片（没录到就用内置箭头），轨迹去抖但不滞后，按下时略微缩小，点击处有白色波纹。
+- **空闲处理**：没有鼠标、键盘、声音超过 2 秒的片段，画面静止就直接剪掉（看不出跳变），画面在动（比如加载）就加速 4 倍，越长越快，最多 10 倍，前后各留 0.4 秒原速。暂停期间的空白也会去掉。
+- **掐头去尾**：开头和结尾只有鼠标移动的部分会剪掉（比如最后移去点「结束」的那段），保留第一次和最后一次操作前后各 1.5 秒。
+- **声音**：电脑声音和麦克风按剪辑后的时间轴放进去。
+
+生成的文件：`index.html`（KairoFrame 工程，可以手改后用 `kairoframe render` 重新渲染）、`polish.json`（剪辑摘要：原长、成片长度、剪掉和加速的段数、放大次数）、`polished.mp4`。
+
+需要先安装 KairoFrame（一行命令，见它的 README）：
+```
+powershell -NoProfile -ExecutionPolicy Bypass -Command "irm https://raw.githubusercontent.com/aisnote/kairoframe/main/install.ps1 | iex"
+```
+
+可调参数在 `screencap.ini` 的 `[polish]` 一节，命令行参数优先：
+
+| ini | 命令行 | 默认 | 说明 |
+|---|---|---|---|
+| `AutoZoom` | `--no-zoom` | 1 | 是否自动放大 |
+| `ZoomLevel` | `--zoom Z` | 2.0 | 放大倍数 |
+| `IdleMode` | `--idle auto\|speed\|cut\|off` | auto | 空闲片段：静止就剪、在动就加速 / 都加速 / 都剪 / 不处理 |
+| `IdleMinSeconds` | `--idle-min S` | 2 | 多久没操作算空闲 |
+| `IdleSpeed` | `--idle-speed X` | 4 | 空闲加速倍数 |
+| `TrimEnds` | `--no-trim` | 1 | 掐头去尾 |
+| `OutputWidth` | `--width W` | 1920 | 输出宽度（按原比例，不放大） |
+| `CursorScale` | `--cursor-scale X` | 1.0 | 鼠标大小 |
+| `CursorSmoothMs` | `--smooth MS` | 40 | 鼠标去抖强度，0 = 原始轨迹 |
+| `ClickRipple` | `--no-ripple` | 1 | 点击波纹 |
+| `RenderQuality` | `--quality draft\|standard\|high` | standard | KairoFrame 渲染质量 |
+| `KairoFramePath` | | 空 | kairoframe.exe 的位置，空 = PATH，然后 `%LOCALAPPDATA%\KairoFrame\bin` |
+| | `--no-render` | | 只生成 index.html，不渲染 |
 
 ## 画质与空间（4K，30fps）
 
