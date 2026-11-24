@@ -1,0 +1,261 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <title>Lumen — launch film</title>
+    <script src="https://cdn.jsdelivr.net/npm/gsap@3.14.2/dist/gsap.min.js"></script>
+    <style>
+      html, body { margin: 0; background: #050a1f; }
+      #root {
+        position: relative; overflow: hidden; width: 1920px; height: 1080px;
+        background: radial-gradient(ellipse at 50% 40%, #0c1638 0%, #070d26 55%, #03061a 100%);
+        color: #fff; font-family: "Plus Jakarta Sans", sans-serif;
+      }
+      .clip { position: absolute; }
+
+      /* ---------- aurora ---------- */
+      #aurora { left: 0; top: 0; width: 1920px; height: 1080px; z-index: 0; }
+      .blob {
+        position: absolute; border-radius: 50%; filter: blur(110px); mix-blend-mode: screen; opacity: 0.6;
+      }
+      #b1 { width: 1100px; height: 420px; left: -160px; top: 80px;  background: linear-gradient(90deg, #12d6c4, #1b8cff); transform: rotate(-14deg); }
+      #b2 { width: 1000px; height: 380px; left: 760px;  top: 20px;  background: linear-gradient(90deg, #7a3cff, #c04bff); transform: rotate(10deg); }
+      #b3 { width: 900px;  height: 360px; left: 980px;  top: 640px; background: linear-gradient(90deg, #ff4fa3, #ff8ac2); transform: rotate(-8deg); }
+      #b4 { width: 820px;  height: 320px; left: 40px;   top: 700px; background: linear-gradient(90deg, #5b2dff, #18c9d8); transform: rotate(12deg); }
+      #b5 { width: 700px;  height: 300px; left: 620px;  top: 400px; background: linear-gradient(90deg, #1ee0b4, #8a4dff); opacity: 0.35; }
+      #vignette {
+        left: 0; top: 0; width: 1920px; height: 1080px; z-index: 1; pointer-events: none;
+        background: radial-gradient(ellipse at 50% 50%, rgba(3,6,26,0) 45%, rgba(3,6,26,0.75) 100%);
+      }
+
+      /* ---------- headline ---------- */
+      #headline {
+        left: 0; top: 0; width: 1920px; height: 1080px; z-index: 5;
+        display: flex; flex-direction: column; align-items: center; justify-content: center;
+      }
+      .line { margin: 0; font-size: 150px; font-weight: 800; line-height: 1.08; letter-spacing: -0.03em; white-space: nowrap; }
+      .word { display: inline-block; margin: 0 0.12em; position: relative; }
+      .ghost { visibility: hidden; display: inline-block; }
+      .live { position: absolute; left: 50%; top: 0; white-space: nowrap; display: inline-block; }
+      .line2 .word .live {
+        background: linear-gradient(95deg, #7ff3e4 0%, #b9a4ff 50%, #ff9fd0 100%);
+        -webkit-background-clip: text; background-clip: text; color: transparent;
+        padding-bottom: 0.08em;
+      }
+
+      /* ---------- logo ---------- */
+      #brand {
+        left: 0; top: 270px; width: 1920px; height: 300px; z-index: 6;
+        display: flex; align-items: center; justify-content: center; gap: 56px;
+      }
+      #mark { position: relative; width: 230px; height: 230px; }
+      #glow {
+        position: absolute; left: 15px; top: 15px; width: 200px; height: 200px; border-radius: 50%;
+        background: radial-gradient(circle, rgba(170,220,255,0.85) 0%, rgba(140,110,255,0.35) 45%, rgba(0,0,0,0) 72%);
+        filter: blur(24px); opacity: 0;
+      }
+      .seg-wrap { position: absolute; left: 115px; top: 115px; width: 0; height: 0; }
+      .seg {
+        position: absolute; width: 92px; height: 38px; left: -46px; top: -19px; border-radius: 19px;
+        box-shadow: 0 0 18px rgba(180,210,255,0.55), inset 0 1px 0 rgba(255,255,255,0.7);
+      }
+      #wordmark { position: relative; font-size: 168px; font-weight: 800; letter-spacing: -0.035em; line-height: 1; padding-bottom: 12px; }
+
+      /* ---------- chips ---------- */
+      #chips {
+        left: 0; top: 650px; width: 1920px; z-index: 6;
+        display: flex; justify-content: center; gap: 32px;
+      }
+      .chip {
+        display: flex; align-items: center; gap: 18px;
+        padding: 22px 38px; border-radius: 999px; font-size: 40px; font-weight: 600; letter-spacing: -0.01em;
+        background: rgba(255,255,255,0.08); border: 1.5px solid rgba(255,255,255,0.22);
+        box-shadow: 0 10px 40px rgba(0,0,0,0.25), inset 0 1px 0 rgba(255,255,255,0.25);
+        color: #f2f5ff;
+      }
+      .dot { width: 16px; height: 16px; border-radius: 50%; }
+
+      /* ---------- end card ---------- */
+      #endcard {
+        left: 0; top: 0; width: 1920px; height: 1080px; z-index: 7;
+        display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 44px;
+      }
+      #endmark { display: flex; align-items: center; gap: 22px; font-size: 56px; font-weight: 700; letter-spacing: -0.02em; color: #e8ecff; }
+      #ring-sm { width: 64px; height: 64px; border-radius: 50%; border: 9px solid transparent;
+        background: linear-gradient(#070d26, #070d26) padding-box, conic-gradient(#3ee6d2, #7a8cff, #b26bff, #ff6fb5, #ffb3d6, #3ee6d2) border-box;
+        box-shadow: 0 0 30px rgba(160,140,255,0.6); box-sizing: border-box; }
+      #card {
+        position: relative; overflow: hidden; border-radius: 48px; padding: 44px 110px 54px;
+        background: rgba(255,255,255,0.07); border: 1.5px solid rgba(255,255,255,0.2);
+        box-shadow: 0 30px 90px rgba(0,0,0,0.35), inset 0 1px 0 rgba(255,255,255,0.3);
+      }
+      #avail { position: relative; font-size: 140px; font-weight: 800; letter-spacing: -0.035em; line-height: 1; white-space: nowrap; }
+      #shine {
+        position: absolute; top: -40%; left: 0; width: 260px; height: 180%;
+        background: linear-gradient(90deg, rgba(255,255,255,0) 0%, rgba(255,255,255,0.8) 50%, rgba(255,255,255,0) 100%);
+        transform: translateX(-400px) rotate(18deg); mix-blend-mode: overlay;
+      }
+      #shine2 {
+        position: absolute; top: -40%; left: 0; width: 90px; height: 180%;
+        background: linear-gradient(90deg, rgba(255,255,255,0) 0%, rgba(255,255,255,0.35) 50%, rgba(255,255,255,0) 100%);
+        transform: translateX(-400px) rotate(18deg);
+      }
+    </style>
+  </head>
+  <body>
+    <div id="root" data-composition-id="main" data-start="0" data-width="1920" data-height="1080" data-duration="12">
+
+      <div id="aurora" class="clip" data-start="0" data-duration="12" data-track-index="0">
+        <div class="blob" id="b1"></div>
+        <div class="blob" id="b2"></div>
+        <div class="blob" id="b3"></div>
+        <div class="blob" id="b4"></div>
+        <div class="blob" id="b5"></div>
+      </div>
+      <div id="vignette" class="clip" data-start="0" data-duration="12" data-track-index="1"></div>
+
+      <div id="headline" class="clip" data-start="0" data-duration="5" data-track-index="2">
+        <p class="line line1"><span class="word">Your</span><span class="word">ideas,</span></p>
+        <p class="line line2"><span class="word">in</span><span class="word">full</span><span class="word">light.</span></p>
+      </div>
+
+      <div id="brand" class="clip" data-start="4" data-duration="6.2" data-track-index="3">
+        <div id="mark">
+          <div id="glow"></div>
+          <div class="seg-wrap" id="ring"></div>
+        </div>
+        <div id="wordmark">Lumen</div>
+      </div>
+
+      <div id="chips" class="clip" data-start="7.4" data-duration="2.8" data-track-index="4">
+        <div class="chip"><span class="dot" style="background:#3ee6d2;box-shadow:0 0 14px #3ee6d2"></span>Instant search</div>
+        <div class="chip"><span class="dot" style="background:#9b85ff;box-shadow:0 0 14px #9b85ff"></span>Offline first</div>
+        <div class="chip"><span class="dot" style="background:#ff7fbf;box-shadow:0 0 14px #ff7fbf"></span>End-to-end encrypted</div>
+      </div>
+
+      <div id="endcard" class="clip" data-start="9.8" data-duration="2.2" data-track-index="5">
+        <div id="endmark"><div id="ring-sm"></div>Lumen</div>
+        <div id="card">
+          <div id="avail">Available today</div>
+          <div id="shine"></div>
+          <div id="shine2"></div>
+        </div>
+      </div>
+    </div>
+
+    <script>
+      // ----- build the six ring segments (deterministic) -----
+      const SEG_COLORS = [
+        "linear-gradient(90deg,#3ee6d2,#5fd0ff)",
+        "linear-gradient(90deg,#5fd0ff,#7a8cff)",
+        "linear-gradient(90deg,#7a8cff,#b26bff)",
+        "linear-gradient(90deg,#b26bff,#ff6fb5)",
+        "linear-gradient(90deg,#ff6fb5,#ffa8cf)",
+        "linear-gradient(90deg,#ffa8cf,#3ee6d2)",
+      ];
+      const ring = document.getElementById("ring");
+      const R = 80;
+      const segs = [];
+      for (let i = 0; i < 6; i++) {
+        const s = document.createElement("div");
+        s.className = "seg";
+        s.style.background = SEG_COLORS[i];
+        ring.appendChild(s);
+        segs.push(s);
+      }
+
+      // Letter-spacing changes must not move neighbours: a hidden copy holds the final width,
+      // the visible copy is centred on it and may grow freely.
+      function pin(el) {
+        const text = el.textContent;
+        el.textContent = "";
+        const g = document.createElement("span"); g.className = "ghost"; g.textContent = text;
+        const l = document.createElement("span"); l.className = "live"; l.textContent = text;
+        el.append(g, l);
+        gsap.set(l, { xPercent: -50 });
+        return l;
+      }
+      document.querySelectorAll("#headline .word").forEach(pin);
+      const wordmarkLive = pin(document.getElementById("wordmark"));
+      const availLive = pin(document.getElementById("avail"));
+
+      window.__timelines = window.__timelines || {};
+      const tl = gsap.timeline({ paused: true });
+      const FILM = 12;
+
+      // ----- aurora: drift + breathe the whole time (finite yoyo repeats) -----
+      const drift = [
+        { id: "#b1", x: 220, y: 70,  s: 1.18, r: -6, d: 4.0 },
+        { id: "#b2", x: -200, y: 90, s: 1.22, r: 14, d: 3.4 },
+        { id: "#b3", x: -240, y: -80, s: 1.15, r: -14, d: 4.6 },
+        { id: "#b4", x: 260, y: -60, s: 1.25, r: 20, d: 3.0 },
+        { id: "#b5", x: -120, y: 60, s: 1.35, r: 0, d: 2.4 },
+      ];
+      drift.forEach((b) => {
+        const reps = Math.ceil(FILM / b.d) - 1;
+        tl.to(b.id, { x: b.x, y: b.y, scale: b.s, rotation: "+=" + b.r, duration: b.d, ease: "sine.inOut", yoyo: true, repeat: reps }, 0);
+        tl.to(b.id, { opacity: 0.85, duration: b.d * 0.7, ease: "sine.inOut", yoyo: true, repeat: Math.ceil(FILM / (b.d * 0.7)) - 1 }, 0);
+      });
+
+      // ----- headline word by word -----
+      const words = gsap.utils.toArray("#headline .live");
+      words.forEach((w, i) => {
+        const at = 0.5 + i * 0.22 + (i >= 2 ? 0.25 : 0);
+        tl.fromTo(w,
+          { opacity: 0, y: 90, letterSpacing: "0.18em", filter: "blur(14px)" },
+          { opacity: 1, y: 0, letterSpacing: "-0.03em", filter: "blur(0px)", duration: 0.85, ease: "back.out(1.7)" },
+          at);
+      });
+      // gentle push-in while it holds
+      tl.fromTo("#headline", { scale: 0.98 }, { scale: 1.02, duration: 3.5, ease: "none" }, 0.5);
+      // clear upward at 4 s
+      tl.to(words, { y: -140, opacity: 0, filter: "blur(12px)", duration: 0.6, ease: "power3.in", stagger: 0.04 }, 4.0);
+
+      // ----- logo assembles -----
+      const fromDirs = [
+        [-620, -380], [560, -460], [760, 180], [380, 520], [-480, 460], [-820, 60],
+      ];
+      segs.forEach((s, i) => {
+        const ang = i * 60 - 90;           // degrees, top first
+        const rad = ang * Math.PI / 180;
+        const fx = Math.cos(rad) * R, fy = Math.sin(rad) * R;
+        const rot = ang + 90;              // tangent to the ring
+        gsap.set(s, { x: fx, y: fy, rotation: rot });
+        tl.fromTo(s,
+          { x: fx + fromDirs[i][0], y: fy + fromDirs[i][1], rotation: rot + (i % 2 ? 220 : -200), scale: 0.4, opacity: 0 },
+          { x: fx, y: fy, rotation: rot, scale: 1, opacity: 1, duration: 0.9, ease: "expo.out", immediateRender: true },
+          4.35 + i * 0.08);
+      });
+      // lock: ring snaps, glow flares
+      tl.fromTo("#ring", { scale: 1.12, rotation: -30 }, { scale: 1, rotation: 0, duration: 1.1, ease: "power3.out" }, 4.4);
+      tl.fromTo("#mark", { scale: 1 }, { scale: 1.06, duration: 0.18, ease: "power2.out", yoyo: true, repeat: 1 }, 5.3);
+      tl.fromTo("#glow", { opacity: 0, scale: 0.5 }, { opacity: 1, scale: 1.25, duration: 0.5, ease: "power2.out" }, 5.3);
+      tl.to("#glow", { opacity: 0.6, scale: 1.0, duration: 0.9, ease: "sine.inOut" }, 5.8);
+      tl.to("#glow", { opacity: 0.85, scale: 1.12, duration: 1.4, ease: "sine.inOut", yoyo: true, repeat: 2 }, 6.7);
+      // slow ring spin while it holds
+      tl.to("#ring", { rotation: 40, duration: 4.5, ease: "sine.inOut" }, 5.5);
+      // wordmark fades up beside it
+      tl.fromTo(wordmarkLive,
+        { opacity: 0, y: 30, letterSpacing: "0.04em", filter: "blur(10px)" },
+        { opacity: 1, y: 0, letterSpacing: "-0.035em", filter: "blur(0px)", duration: 1.0, ease: "power3.out" }, 5.45);
+
+      // ----- chips -----
+      const chips = gsap.utils.toArray(".chip");
+      chips.forEach((c, i) => {
+        tl.fromTo(c, { opacity: 0, y: 40, scale: 0.7 }, { opacity: 1, y: 0, scale: 1, duration: 0.6, ease: "back.out(2.2)" }, 7.5 + i * 0.3);
+      });
+
+      // ----- out to end card -----
+      tl.to(chips, { opacity: 0, y: 30, duration: 0.45, ease: "power2.in", stagger: 0.05 }, 9.55);
+      tl.to("#brand", { opacity: 0, scale: 0.92, y: -40, filter: "blur(10px)", duration: 0.55, ease: "power2.in" }, 9.6);
+
+      tl.fromTo("#endmark", { opacity: 0, y: 20 }, { opacity: 1, y: 0, duration: 0.7, ease: "power3.out" }, 10.0);
+      tl.fromTo("#card", { opacity: 0, y: 50, scale: 0.94 }, { opacity: 1, y: 0, scale: 1, duration: 0.8, ease: "back.out(1.4)" }, 10.05);
+      tl.fromTo(availLive, { letterSpacing: "0.05em" }, { letterSpacing: "-0.035em", duration: 1.0, ease: "power3.out" }, 10.05);
+      tl.fromTo(["#shine", "#shine2"], { x: -400 }, { x: 1700, duration: 1.3, ease: "power2.inOut", stagger: 0.08 }, 10.55);
+      tl.to("#ring-sm", { rotation: 120, duration: 2, ease: "sine.inOut" }, 10.0);
+
+      window.__timelines["main"] = tl;
+    </script>
+  </body>
+</html>

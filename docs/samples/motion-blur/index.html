@@ -1,0 +1,97 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Motion blur, side by side — KairoFrame sample</title>
+<meta name="description" content="The same fast move twice: plain on the left, KairoFrame motion blur on the right." />
+<meta property="og:title" content="Motion blur, side by side — KairoFrame sample" />
+<meta property="og:description" content="The same fast move twice: plain on the left, KairoFrame motion blur on the right." />
+<meta property="og:image" content="https://aisnote.github.io/kairoframe/samples/motion-blur/poster.jpg" />
+<meta name="twitter:card" content="summary_large_image" />
+<link rel="icon" href="../../icon.png" />
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500&display=swap" />
+<link rel="stylesheet" href="../../samples/samples.css" />
+</head>
+<body>
+<div class="wrap">
+  <nav>
+    <a class="brand" href="../../"><img src="../../icon.png" alt="" />KairoFrame</a>
+    <div class="links"><a class="opt" href="../../#speed">Speed</a><a class="opt" href="../../#agents">Agents</a><a href="../../samples/">Samples</a>
+      <a href="https://github.com/aisnote/kairoframe">GitHub</a></div>
+  </nav>
+  <a class="back" href="../">&larr; All samples</a>
+  <h1>Motion blur, side by side</h1>
+  <p class="lead">The same fast move twice: plain on the left, KairoFrame motion blur on the right.</p>
+  <div class="video"><video src="video.mp4" poster="poster.jpg" controls playsinline preload="metadata"></video></div>
+  <div class="stats">
+    <div class="stat"><b>6.3 s</b><span>to render (1.6&times; real time)</span></div>
+    <div class="stat"><b>10 s</b><span>1920&times;1080, 30 fps, 300 frames</span></div>
+    <div class="stat"><b>$1.02</b><span>LLM cost to write it (Claude Opus 5.5)</span></div>
+    <div class="stat"><b>16,306</b><span>output tokens, 27 turns</span></div>
+  </div>
+
+  <section>
+    <div class="prompt-head"><h3 style="margin:0">The prompt</h3><button class="copy" type="button" data-copy="prompt">Copy prompt</button></div>
+    <p class="note" style="margin:0 0 12px">Given word for word to a fresh Claude Code session in an empty project made by <code>kairoframe init</code>. The session wrote <a href="project/index.html">index.html</a>; nothing was edited by hand.</p>
+    <pre id="prompt">Make a 10-second demonstration of KairoFrame&#x27;s motion blur effect (read &quot;Effects of KairoFrame&quot; in `kairoframe docs`). Split the screen into two equal panels with a thin divider, labelled at the top &quot;Without motion blur&quot; and &quot;With motion blur&quot;. In each panel the identical animation plays: three colourful playing-card-sized cards whip across the panel on fast curved paths with rotation, bounce off the edges and come to rest in a fan, then one card flips and spins quickly at 6 s and the fan slides out at speed at 8.5 s. The right panel&#x27;s cards carry data-kf-fx=&quot;motion-blur(samples: 16, shutter: 180)&quot; and the left panel&#x27;s do not; everything else is the same. Use a dark studio background with a subtle floor reflection. Add a small caption at the bottom: &quot;data-kf-fx=\&quot;motion-blur(samples: 16, shutter: 180)\&quot;&quot; in a monospace font.
+
+Work in this folder (a kairoframe project made by `kairoframe init`; read AGENTS.md). Check your work with `kairoframe check` and look at `kairoframe sheet`; fix what is wrong. Do not run `kairoframe render`: the film will be rendered separately.</pre>
+  </section>
+
+  <section class="cols">
+    <div>
+      <h3>Tokens and cost</h3>
+      <div class="box"><table>
+        <tr><th>Claude Opus 5.5</th><th>tokens</th></tr><tr><td>Input, not cached</td><td>38</td></tr><tr><td>Cache writes</td><td>63,186</td></tr><tr><td>Cache reads</td><td>953,285</td></tr><tr><td>Output (with thinking)</td><td>16,306</td></tr>
+        <tr class="total"><td>Input in all</td><td>1,016,509</td></tr>
+      </table></div>
+      <div class="box" style="margin-top:14px"><table>
+        <tr><th>Cost</th><th>USD</th></tr>
+        <tr class="total"><td>Measured, Claude Opus 5.5 at list price</td><td>$1.02</td></tr><tr><td>Claude Sonnet 5.5, same tokens (estimate)</td><td>$0.51</td></tr><tr><td>Claude Fable 5.2, same tokens (estimate)</td><td>$1.85</td></tr>
+      </table></div>
+      <p class="note">From the session's own usage report (<code>claude -p --output-format json</code>). The estimates price the same token counts at
+        the other models' list prices; another model would not use exactly the same tokens. The session took 3.1 minutes.</p>
+    </div>
+    <div>
+      <h3>Render</h3>
+      <div class="box"><table>
+        <tr><th>Compose</th><th></th></tr>
+        <tr><td>Render time (median of 3)</td><td>6.31 s</td></tr>
+        <tr><td>All three runs</td><td>6.28 / 6.33 / 6.31 s</td></tr>
+        <tr><td>Film length</td><td>10.00 s</td></tr>
+        <tr><td>Speed</td><td>1.6&times; real time</td></tr>
+        <tr><td>Frames</td><td>300 at 30 fps</td></tr>
+        <tr><td>File</td><td>2.3 MB, H.264</td></tr>
+      </table></div>
+      <p class="note">KairoFrame v0.3.1 for Linux, <code>kairoframe render -o render.mp4 --crf 23</code> (standard quality, CRF 23 for a smaller web file),
+        wall-clock time including the browser start. Machine: AMD Ryzen 9 9900X3D (12 cores), NVIDIA RTX 5090, Ubuntu 24.04.</p>
+    </div>
+  </section>
+
+  <section>
+    <h3>Make it yourself</h3>
+    <div class="steps">
+      <div class="step"><b>1. Install KairoFrame and Claude Code</b><pre>curl -fsSL https://raw.githubusercontent.com/aisnote/kairoframe/main/install.sh | bash</pre></div>
+      <div class="step"><b>2. Start an empty project and save the prompt above as prompt.txt in it</b><pre>kairoframe init motion-blur --duration 10
+cd motion-blur</pre></div>
+      <div class="step"><b>3. Let Claude write the film</b><pre>claude -p &quot;$(cat prompt.txt)&quot; --model opus \
+  --permission-mode acceptEdits \
+  --allowedTools &quot;Read,Write,Edit,Glob,Grep,Bash(kairoframe:*),Bash(ls:*)&quot;</pre></div>
+      <div class="step"><b>4. Render</b><pre>kairoframe render -o motion-blur.mp4 --crf 23</pre></div>
+    </div>
+    <p class="note">Or skip steps 2 and 3: download this sample's <a href="project/index.html">index.html</a> into a folder and run step 4 there.
+      A new session writes a different film each time; the cost of a run lands in the same range.</p>
+  </section>
+</div>
+<footer><div class="wrap"><span>&copy; 2026 KairoFrame</span><span><a href="https://github.com/aisnote/kairoframe">GitHub</a> &middot;
+  <a href="https://github.com/aisnote/kairoframe/releases">Releases</a> &middot; Hyperframes is a project of HeyGen; KairoFrame is independent of it.</span></div></footer>
+<script>
+document.querySelectorAll('.copy').forEach(b => b.addEventListener('click', () => {
+  const t = document.getElementById(b.dataset.copy).textContent;
+  const done = () => { b.textContent = 'Copied'; b.classList.add('done'); setTimeout(() => { b.textContent = 'Copy prompt'; b.classList.remove('done'); }, 1800); };
+  if (navigator.clipboard) navigator.clipboard.writeText(t).then(done, () => {}); }));
+</script>
+</body>
+</html>

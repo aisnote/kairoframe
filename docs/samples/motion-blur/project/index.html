@@ -1,0 +1,175 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <title>motion-blur</title>
+    <script src="https://cdn.jsdelivr.net/npm/gsap@3.14.2/dist/gsap.min.js"></script>
+    <style>
+      html, body { margin: 0; background: #07080c; font-family: "Inter", sans-serif; }
+      #root { position: relative; overflow: hidden; color: #fff;
+        background: radial-gradient(ellipse 70% 60% at 50% 38%, #1f2433 0%, #10131b 55%, #07080c 100%); }
+
+      .panel { position: absolute; top: 0; width: 960px; height: 1080px; overflow: hidden; }
+      #pL { left: 0; }
+      #pR { left: 960px; }
+      .spot { position: absolute; inset: 0;
+        background: radial-gradient(ellipse 60% 55% at 50% 45%, rgba(120,140,190,0.16), rgba(0,0,0,0) 70%); }
+      .floor { position: absolute; left: 0; right: 0; top: 840px; bottom: 0;
+        background: linear-gradient(180deg, #161a24 0%, #0b0d13 60%, #07080c 100%); }
+      .floor::before { content: ""; position: absolute; left: 0; right: 0; top: 0; height: 2px;
+        background: linear-gradient(90deg, rgba(255,255,255,0), rgba(190,205,240,0.35), rgba(255,255,255,0)); }
+
+      .stage { position: absolute; left: 0; top: 0; width: 960px; height: 1080px; perspective: 1400px; }
+      .refl { transform-origin: 50% 840px; transform: scaleY(-1); opacity: 0.32;
+        -webkit-mask-image: linear-gradient(180deg, rgba(0,0,0,0) 0px, rgba(0,0,0,0) 710px, #000 840px);
+                mask-image: linear-gradient(180deg, rgba(0,0,0,0) 0px, rgba(0,0,0,0) 710px, #000 840px); }
+
+      .card { position: absolute; left: 0; top: 0; width: 180px; height: 252px;
+        transform-style: preserve-3d; }
+      .face { position: absolute; inset: 0; border-radius: 16px; overflow: hidden;
+        box-shadow: 0 18px 40px rgba(0,0,0,0.45), inset 0 0 0 2px rgba(255,255,255,0.35); }
+      .front .pip { position: absolute; font-weight: 800; font-size: 34px; line-height: 1; color: rgba(255,255,255,0.95); }
+      .front .tl { left: 16px; top: 14px; }
+      .front .br { right: 16px; bottom: 14px; transform: rotate(180deg); }
+      .front .mark { position: absolute; left: 50%; top: 50%; }
+      .back { opacity: 0;
+        background: repeating-linear-gradient(45deg, #f4f1ea 0 10px, #e3ddd0 10px 20px); }
+      .back::after { content: ""; position: absolute; inset: 14px; border-radius: 10px; border: 4px solid #c43d5a; }
+
+      .c1 .front { background: linear-gradient(150deg, #ff7a59, #e8336d); }
+      .c1 .mark { width: 76px; height: 76px; margin: -38px 0 0 -38px; background: #fff; transform: rotate(45deg); border-radius: 8px; }
+      .c2 .front { background: linear-gradient(150deg, #2ee6c5, #1479d6); }
+      .c2 .mark { width: 90px; height: 90px; margin: -45px 0 0 -45px; border-radius: 50%; border: 16px solid #fff; box-sizing: border-box; }
+      .c3 .front { background: linear-gradient(150deg, #ffd23f, #9b4dff); }
+      .c3 .mark { width: 84px; height: 84px; margin: -42px 0 0 -42px; background: #fff; border-radius: 50%; }
+
+      .divider { position: absolute; left: 959px; top: 0; width: 2px; height: 1080px; z-index: 5;
+        background: linear-gradient(180deg, rgba(255,255,255,0.05), rgba(255,255,255,0.4) 50%, rgba(255,255,255,0.05)); }
+      .label { position: absolute; top: 64px; width: 960px; margin: 0; text-align: center; z-index: 6;
+        font-size: 46px; font-weight: 700; letter-spacing: 0.01em; color: #eef2fa; }
+      #labL { left: 0; }
+      #labR { left: 960px; }
+      .label span { display: inline-block; padding: 10px 28px; border-radius: 40px;
+        background: rgba(10,12,18,0.55); box-shadow: inset 0 0 0 1px rgba(255,255,255,0.14); }
+      #labR span { box-shadow: inset 0 0 0 1px rgba(46,230,197,0.55); }
+      #caption { position: absolute; left: 0; width: 1920px; top: 990px; margin: 0; text-align: center; z-index: 6;
+        font-family: "JetBrains Mono", monospace; font-size: 30px; color: #9fb0cc; }
+    </style>
+  </head>
+  <body>
+    <div id="root" data-composition-id="main" data-start="0" data-width="1920" data-height="1080" data-duration="10">
+
+      <div id="pL" class="panel">
+        <div class="spot"></div>
+        <div class="floor"></div>
+        <div class="stage refl">
+          <div class="card c1"><div class="face front"><b class="pip tl">A</b><i class="mark"></i><b class="pip br">A</b></div><div class="face back"></div></div>
+          <div class="card c2"><div class="face front"><b class="pip tl">K</b><i class="mark"></i><b class="pip br">K</b></div><div class="face back"></div></div>
+          <div class="card c3"><div class="face front"><b class="pip tl">Q</b><i class="mark"></i><b class="pip br">Q</b></div><div class="face back"></div></div>
+        </div>
+        <div class="stage main">
+          <div class="card c1"><div class="face front"><b class="pip tl">A</b><i class="mark"></i><b class="pip br">A</b></div><div class="face back"></div></div>
+          <div class="card c2"><div class="face front"><b class="pip tl">K</b><i class="mark"></i><b class="pip br">K</b></div><div class="face back"></div></div>
+          <div class="card c3"><div class="face front"><b class="pip tl">Q</b><i class="mark"></i><b class="pip br">Q</b></div><div class="face back"></div></div>
+        </div>
+      </div>
+
+      <div id="pR" class="panel">
+        <div class="spot"></div>
+        <div class="floor"></div>
+        <div class="stage refl">
+          <div class="card c1" data-kf-fx="motion-blur(samples: 16, shutter: 180)"><div class="face front"><b class="pip tl">A</b><i class="mark"></i><b class="pip br">A</b></div><div class="face back"></div></div>
+          <div class="card c2" data-kf-fx="motion-blur(samples: 16, shutter: 180)"><div class="face front"><b class="pip tl">K</b><i class="mark"></i><b class="pip br">K</b></div><div class="face back"></div></div>
+          <div class="card c3" data-kf-fx="motion-blur(samples: 16, shutter: 180)"><div class="face front"><b class="pip tl">Q</b><i class="mark"></i><b class="pip br">Q</b></div><div class="face back"></div></div>
+        </div>
+        <div class="stage main">
+          <div class="card c1" data-kf-fx="motion-blur(samples: 16, shutter: 180)"><div class="face front"><b class="pip tl">A</b><i class="mark"></i><b class="pip br">A</b></div><div class="face back"></div></div>
+          <div class="card c2" data-kf-fx="motion-blur(samples: 16, shutter: 180)"><div class="face front"><b class="pip tl">K</b><i class="mark"></i><b class="pip br">K</b></div><div class="face back"></div></div>
+          <div class="card c3" data-kf-fx="motion-blur(samples: 16, shutter: 180)"><div class="face front"><b class="pip tl">Q</b><i class="mark"></i><b class="pip br">Q</b></div><div class="face back"></div></div>
+        </div>
+      </div>
+
+      <div class="divider"></div>
+      <h2 id="labL" class="label"><span>Without motion blur</span></h2>
+      <h2 id="labR" class="label"><span>With motion blur</span></h2>
+      <p id="caption">data-kf-fx="motion-blur(samples: 16, shutter: 180)"</p>
+    </div>
+    <script>
+      window.__timelines = window.__timelines || {};
+      const tl = gsap.timeline({ paused: true });
+
+      // Card centre (x, y) in panel pixels, rotation in degrees, t = time it is reached.
+      // Edges: x 95 / 865 touches the side walls, y 280 the top of the stage, y 714 the floor (840).
+      const FAN = {
+        c1: { x: 392, y: 706, r: -18 },
+        c2: { x: 480, y: 690, r: 0 },
+        c3: { x: 568, y: 706, r: 18 },
+      };
+      const PATHS = {
+        c1: [
+          { t: 0.20, x: -260, y: 720, r: -60 },
+          { t: 0.78, x: 865, y: 330, r: 250 },   // right wall
+          { t: 1.30, x: 330, y: 280, r: 470 },   // top
+          { t: 1.86, x: 95, y: 640, r: 700 },    // left wall
+          { t: 2.70, ...FAN.c1, r: 720 + FAN.c1.r },
+        ],
+        c2: [
+          { t: 0.50, x: 1220, y: 300, r: 90 },
+          { t: 1.08, x: 95, y: 470, r: -230 },   // left wall
+          { t: 1.62, x: 620, y: 714, r: -470 },  // floor
+          { t: 2.18, x: 865, y: 360, r: -650 },  // right wall
+          { t: 3.05, ...FAN.c2, r: -720 + FAN.c2.r },
+        ],
+        c3: [
+          { t: 0.80, x: 480, y: -300, r: 140 },
+          { t: 1.28, x: 865, y: 600, r: 420 },   // right wall
+          { t: 1.80, x: 300, y: 714, r: 640 },   // floor
+          { t: 2.36, x: 95, y: 300, r: 880 },    // left wall
+          { t: 3.40, ...FAN.c3, r: 1080 + FAN.c3.r },
+        ],
+      };
+      // Different eases on x and y bend each straight segment into a curve.
+      const BENDS = [["power1.in", "sine.out"], ["sine.out", "power1.in"], ["power1.inOut", "sine.out"]];
+
+      const stages = ".stage";
+      for (const id of ["c1", "c2", "c3"]) {
+        const sel = `${stages} .${id}`;
+        const p = PATHS[id];
+        gsap.set(sel, { xPercent: -50, yPercent: -50, x: p[0].x, y: p[0].y, rotation: p[0].r, rotationY: 0 });
+        for (let i = 1; i < p.length; i++) {
+          const a = p[i - 1], b = p[i], d = b.t - a.t, last = i === p.length - 1;
+          const [ex, ey] = last ? ["power3.out", "back.out(1.6)"] : BENDS[(i + id.length) % 3];
+          tl.fromTo(sel, { x: a.x }, { x: b.x, duration: d, ease: ex, immediateRender: false }, a.t);
+          tl.fromTo(sel, { y: a.y }, { y: b.y, duration: d, ease: ey, immediateRender: false }, a.t);
+          tl.fromTo(sel, { rotation: a.r }, { rotation: b.r, duration: d, ease: last ? "power3.out" : "none", immediateRender: false }, a.t);
+        }
+      }
+
+      // 6.0 s: the middle card pops up, flips and spins, and drops back into the fan.
+      const k = `${stages} .c2`;
+      tl.fromTo(k, { y: FAN.c2.y }, { y: 480, duration: 0.42, ease: "power2.out", immediateRender: false }, 6.0);
+      tl.fromTo(k, { y: 480 }, { y: FAN.c2.y, duration: 0.5, ease: "bounce.out", immediateRender: false }, 6.42);
+      // Two full turns about the vertical axis at constant speed, so the moments the card turns edge-on
+      // (90, 270, 450, 630 degrees) are known; the faces swap there (no 3D backface culling needed).
+      const F0 = 6.05, FD = 0.8;
+      tl.fromTo(k, { rotationY: 0 }, { rotationY: 720, duration: FD, ease: "none", immediateRender: false }, F0);
+      [90, 270, 450, 630].forEach((deg, i) => {
+        tl.set(`${k} .back`, { opacity: i % 2 ? 0 : 1 }, F0 + FD * deg / 720);
+      });
+      tl.fromTo(k, { rotation: -720 }, { rotation: 0, duration: 1.0, ease: "power3.inOut", immediateRender: false }, 6.05);
+
+      // 8.5 s: the fan slides out to the right at speed.
+      const OUT = [{ id: "c3", t: 8.50, r: 0 }, { id: "c2", t: 8.58, r: 0 }, { id: "c1", t: 8.66, r: 0 }];
+      for (const o of OUT) {
+        const s = `${stages} .${o.id}`, f = FAN[o.id];
+        tl.fromTo(s, { x: f.x }, { x: f.x + 1250, duration: 0.55, ease: "power3.in", immediateRender: false }, o.t);
+        tl.fromTo(s, { y: f.y }, { y: f.y - 120, duration: 0.55, ease: "power2.in", immediateRender: false }, o.t);
+        const r0 = o.id === "c2" ? 0 : (o.id === "c1" ? 720 : 1080) + f.r;
+        tl.fromTo(s, { rotation: r0 }, { rotation: r0 + 35, duration: 0.55, ease: "power2.in", immediateRender: false }, o.t);
+      }
+
+      tl.to({}, { duration: 0.01 }, 9.99);
+      window.__timelines["main"] = tl;
+    </script>
+  </body>
+</html>

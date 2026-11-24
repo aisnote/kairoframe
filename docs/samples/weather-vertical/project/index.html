@@ -1,0 +1,340 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <title>Northport — this week</title>
+    <script src="https://cdn.jsdelivr.net/npm/gsap@3.14.2/dist/gsap.min.js"></script>
+    <style>
+      html, body { margin: 0; background: #0b2a66; }
+      #root {
+        position: relative; overflow: hidden; color: #fff;
+        font-family: "Inter", "Helvetica Neue", Arial, sans-serif;
+        background: linear-gradient(180deg, #9ad8ff 0%, #4f9be6 32%, #2459b8 66%, #0b2a66 100%);
+      }
+      .abs { position: absolute; }
+      .shadow { text-shadow: 0 3px 14px rgba(8, 30, 80, 0.35); }
+
+      /* drifting background clouds */
+      .bgcloud { position: absolute; width: 320px; height: 110px; border-radius: 60px;
+        background: rgba(255,255,255,0.18); filter: blur(6px); z-index: 0; }
+      .bgcloud::before, .bgcloud::after { content: ""; position: absolute; background: inherit; border-radius: 50%; }
+      .bgcloud::before { width: 150px; height: 150px; left: 50px; top: -70px; }
+      .bgcloud::after { width: 120px; height: 120px; left: 160px; top: -50px; }
+
+      #content { position: absolute; inset: 0; z-index: 2; }
+
+      /* header */
+      #city { left: 72px; top: 110px; margin: 0; font-size: 112px; font-weight: 800; letter-spacing: -2px; }
+      #week { left: 76px; top: 262px; margin: 0; font-size: 52px; font-weight: 500; color: #eaf6ff; }
+      #today { left: 76px; top: 334px; margin: 0; font-size: 44px; font-weight: 600; color: #fff3c4; }
+      #bigsun { right: 40px; top: 80px; width: 310px; height: 310px; }
+
+      /* chart */
+      #chartcard { left: 54px; top: 430px; width: 972px; height: 566px;
+        background: rgba(255,255,255,0.12); border-radius: 36px; }
+      #charthead { left: 36px; top: 24px; right: 36px; display: flex; justify-content: space-between;
+        font-size: 44px; font-weight: 600; }
+      .key { display: inline-flex; align-items: center; margin-left: 28px; font-weight: 500; }
+      .key i { display: inline-block; width: 36px; height: 8px; border-radius: 4px; margin-right: 12px; }
+      #chart { left: 0; top: 80px; width: 972px; height: 486px; overflow: visible; }
+      #chart text { font-family: inherit; }
+
+      /* rows */
+      #rows { left: 54px; top: 1020px; width: 972px; }
+      .row { position: absolute; left: 0; width: 972px; height: 104px; border-radius: 28px;
+        background: rgba(20,60,140,0.38); border: 2px solid rgba(255,255,255,0.18); display: flex; align-items: center; box-sizing: border-box;
+        padding: 0 36px; }
+      .row .day { width: 130px; font-size: 48px; font-weight: 700; }
+      .row svg { width: 88px; height: 88px; margin-right: 28px; overflow: visible; }
+      .row .sum { flex: 1; font-size: 44px; font-weight: 500; color: #eaf6ff; }
+      .row .temps { font-size: 48px; font-weight: 700; }
+      .row .temps .lo { color: #b9e2ff; font-weight: 500; }
+
+      /* ending */
+      #end { left: 0; top: 0; width: 1080px; height: 1920px; z-index: 3; display: flex; flex-direction: column;
+        align-items: center; justify-content: center; text-align: center; }
+      #end h2 { margin: 0; font-size: 130px; line-height: 1.08; font-weight: 800; letter-spacing: -2px; }
+      #end p { margin: 36px 0 0; font-size: 48px; color: #d7ecff; font-weight: 500; }
+      #umbrella { width: 260px; height: 260px; margin-bottom: 40px; }
+    </style>
+  </head>
+  <body>
+    <div id="root" data-composition-id="main" data-start="0" data-width="1080" data-height="1920" data-duration="12">
+      <div class="bgcloud" id="c1" style="left:-40px; top:520px; transform:scale(1.2)"></div>
+      <div class="bgcloud" id="c2" style="left:620px; top:980px; transform:scale(0.9)"></div>
+      <div class="bgcloud" id="c3" style="left:120px; top:1480px; transform:scale(1.4)"></div>
+      <div class="bgcloud" id="c4" style="left:700px; top:1760px; transform:scale(1.1)"></div>
+      <div class="bgcloud" id="c5" style="left:380px; top:60px; transform:scale(0.8)"></div>
+
+      <div id="content">
+        <h1 id="city" class="abs shadow">Northport</h1>
+        <p id="week" class="abs shadow">This week</p>
+        <p id="today" class="abs shadow">Today: Sunny, 9°</p>
+
+        <svg id="bigsun" class="abs" viewBox="0 0 200 200">
+          <defs>
+            <radialGradient id="sunCore" cx="45%" cy="40%" r="65%">
+              <stop offset="0%" stop-color="#fff6b0" />
+              <stop offset="60%" stop-color="#ffd23f" />
+              <stop offset="100%" stop-color="#ffab1a" />
+            </radialGradient>
+            <radialGradient id="sunGlow">
+              <stop offset="0%" stop-color="#fff3a0" stop-opacity="0.75" />
+              <stop offset="100%" stop-color="#fff3a0" stop-opacity="0" />
+            </radialGradient>
+          </defs>
+          <circle id="sunglow" cx="100" cy="100" r="98" fill="url(#sunGlow)" />
+          <g id="sunrays"><g id="sunpulse"></g></g>
+          <circle id="suncore" cx="100" cy="100" r="46" fill="url(#sunCore)" />
+        </svg>
+
+        <div id="chartcard" class="abs">
+          <div id="charthead" class="abs shadow">
+            <span>Temperature °C</span>
+            <span><span class="key"><i style="background:#ffd166"></i>High</span><span class="key"><i style="background:#cdeeff"></i>Low</span></span>
+          </div>
+          <svg id="chart" class="abs" viewBox="0 0 972 486">
+            <defs>
+              <clipPath id="reveal"><rect id="revealRect" x="0" y="0" width="0" height="486" /></clipPath>
+              <linearGradient id="band" x1="0" y1="0" x2="0" y2="1">
+                <stop offset="0%" stop-color="#ffd166" stop-opacity="0.35" />
+                <stop offset="100%" stop-color="#cdeeff" stop-opacity="0.12" />
+              </linearGradient>
+            </defs>
+            <g id="grid"></g>
+            <g clip-path="url(#reveal)">
+              <path id="bandPath" fill="url(#band)" />
+              <path id="hiPath" fill="none" stroke="#ffd166" stroke-width="8" stroke-linecap="round" stroke-linejoin="round" />
+              <path id="loPath" fill="none" stroke="#cdeeff" stroke-width="8" stroke-linecap="round" stroke-linejoin="round" />
+            </g>
+            <g id="dots"></g>
+            <g id="days"></g>
+          </svg>
+        </div>
+
+        <div id="rows" class="abs"></div>
+      </div>
+
+      <div id="end" class="abs clip" data-start="9.6" data-duration="2.4">
+        <svg id="umbrella" viewBox="0 0 100 100">
+          <path d="M8 50 Q50 -4 92 50 Q81 42 71 50 Q61 42 50 50 Q39 42 29 50 Q19 42 8 50 Z" fill="#ffd166" />
+          <path d="M50 50 V82 a7 7 0 0 1 -14 0" fill="none" stroke="#fff" stroke-width="5" stroke-linecap="round" />
+          <g id="enddrops" stroke="#cdeeff" stroke-width="4" stroke-linecap="round">
+            <line x1="14" y1="64" x2="11" y2="74" /><line x1="86" y1="60" x2="83" y2="70" /><line x1="22" y1="84" x2="19" y2="94" /><line x1="76" y1="82" x2="73" y2="92" />
+          </g>
+        </svg>
+        <h2 class="shadow">Stay dry,<br />Northport.</h2>
+        <p class="shadow">Rain Wed–Fri · Snow Saturday</p>
+      </div>
+    </div>
+
+    <script>
+      (function () {
+        const NS = "http://www.w3.org/2000/svg";
+        const el = (tag, attrs, parent) => {
+          const n = document.createElementNS(NS, tag);
+          for (const k in attrs) n.setAttribute(k, attrs[k]);
+          if (parent) parent.appendChild(n);
+          return n;
+        };
+
+        const WEEK = [
+          { d: "Mon", hi: 9, lo: 2, icon: "sun", sum: "Sunny" },
+          { d: "Tue", hi: 7, lo: 1, icon: "cloud", sum: "Cloudy" },
+          { d: "Wed", hi: 6, lo: 2, icon: "rain", sum: "Rainy" },
+          { d: "Thu", hi: 8, lo: 3, icon: "storm", sum: "Stormy" },
+          { d: "Fri", hi: 5, lo: 0, icon: "rain", sum: "Showers" },
+          { d: "Sat", hi: 1, lo: -4, icon: "snow", sum: "Snowy" },
+          { d: "Sun", hi: 3, lo: -3, icon: "sun", sum: "Clear" },
+        ];
+
+        // ---------- big sun rays ----------
+        const pulse = document.getElementById("sunpulse");
+        for (let i = 0; i < 12; i++) {
+          const a = (i * 30 * Math.PI) / 180;
+          const long = i % 2 === 0;
+          const r1 = 60, r2 = long ? 92 : 80;
+          el("line", {
+            x1: 100 + r1 * Math.cos(a), y1: 100 + r1 * Math.sin(a),
+            x2: 100 + r2 * Math.cos(a), y2: 100 + r2 * Math.sin(a),
+            stroke: "#ffd23f", "stroke-width": long ? 9 : 7, "stroke-linecap": "round",
+          }, pulse);
+        }
+
+        // ---------- chart geometry ----------
+        const X0 = 76, STEP = (972 - 2 * X0) / 6;
+        const xAt = (i) => X0 + i * STEP;
+        const yAt = (t) => 92 + (10 - t) * 18.5;
+        const grid = document.getElementById("grid");
+        [8, 4, 0, -4].forEach((t) => {
+          el("line", { x1: 30, x2: 942, y1: yAt(t), y2: yAt(t), stroke: "rgba(255,255,255,0.18)", "stroke-width": 2, "stroke-dasharray": "6 10" }, grid);
+        });
+        const smooth = (pts) => {
+          let d = `M${pts[0][0]},${pts[0][1]}`;
+          for (let i = 1; i < pts.length; i++) {
+            const [x0, y0] = pts[i - 1], [x1, y1] = pts[i];
+            const cx = (x0 + x1) / 2;
+            d += ` C${cx},${y0} ${cx},${y1} ${x1},${y1}`;
+          }
+          return d;
+        };
+        const hiPts = WEEK.map((w, i) => [xAt(i), yAt(w.hi)]);
+        const loPts = WEEK.map((w, i) => [xAt(i), yAt(w.lo)]);
+        const hiD = smooth(hiPts), loD = smooth(loPts);
+        document.getElementById("hiPath").setAttribute("d", hiD);
+        document.getElementById("loPath").setAttribute("d", loD);
+        const loRev = smooth(loPts.slice().reverse()).replace(/^M/, "L");
+        document.getElementById("bandPath").setAttribute("d", hiD + " " + loRev + " Z");
+
+        const dots = document.getElementById("dots"), days = document.getElementById("days");
+        const dotEls = [], labelEls = [];
+        WEEK.forEach((w, i) => {
+          const x = xAt(i);
+          const hd = el("circle", { cx: x, cy: yAt(w.hi), r: 13, fill: "#ffd166", stroke: "#fff", "stroke-width": 5 }, dots);
+          const ld = el("circle", { cx: x, cy: yAt(w.lo), r: 13, fill: "#cdeeff", stroke: "#fff", "stroke-width": 5 }, dots);
+          const ht = el("text", { x, y: yAt(w.hi) - 30, "text-anchor": "middle", "font-size": 46, "font-weight": 700, fill: "#fff" }, dots);
+          const lt = el("text", { x, y: yAt(w.lo) + 64, "text-anchor": "middle", "font-size": 44, "font-weight": 600, fill: "#dff3ff" }, dots);
+          ht.textContent = "0°"; lt.textContent = "0°";
+          const dl = el("text", { x, y: 476, "text-anchor": "middle", "font-size": 44, "font-weight": 600, fill: "#fff" }, days);
+          dl.textContent = w.d;
+          dotEls.push([hd, ld]); labelEls.push([ht, lt, dl]);
+        });
+
+        // ---------- small icons ----------
+        const cloudShape = (g, fill, dy) => {
+          const c = el("g", { transform: `translate(0 ${dy})` }, g);
+          el("circle", { cx: 38, cy: 52, r: 17, fill }, c);
+          el("circle", { cx: 58, cy: 43, r: 22, fill }, c);
+          el("circle", { cx: 75, cy: 57, r: 13, fill }, c);
+          el("rect", { x: 22, y: 52, width: 64, height: 18, rx: 9, fill }, c);
+          return c;
+        };
+        const icons = []; // {type, nodes}
+        const makeIcon = (svg, type) => {
+          const info = { type };
+          if (type === "sun") {
+            const rays = el("g", {}, svg);
+            for (let k = 0; k < 8; k++) {
+              const a = (k * 45 * Math.PI) / 180;
+              el("line", { x1: 50 + 27 * Math.cos(a), y1: 50 + 27 * Math.sin(a), x2: 50 + 40 * Math.cos(a), y2: 50 + 40 * Math.sin(a), stroke: "#ffd23f", "stroke-width": 7, "stroke-linecap": "round" }, rays);
+            }
+            el("circle", { cx: 50, cy: 50, r: 19, fill: "#ffd23f" }, svg);
+            info.rays = rays;
+          } else if (type === "cloud") {
+            info.cloud = cloudShape(el("g", {}, svg), "#ffffff", 0);
+            info.cloudWrap = info.cloud.parentNode;
+          } else if (type === "rain") {
+            const drops = el("g", { stroke: "#8fd0ff", "stroke-width": 6, "stroke-linecap": "round" }, svg);
+            info.drops = [34, 52, 70].map((x) => el("line", { x1: x, y1: 62, x2: x - 4, y2: 74 }, drops));
+            cloudShape(svg, "#e6eef7", -14);
+          } else if (type === "storm") {
+            info.flash = el("circle", { cx: 54, cy: 50, r: 48, fill: "#fff6c2", opacity: 0 }, svg);
+            cloudShape(svg, "#c9d4e2", -14);
+            info.bolt = el("polygon", { points: "56,54 40,78 52,78 44,100 68,70 56,70 64,54", fill: "#ffd23f", opacity: 0.35 }, svg);
+          } else if (type === "snow") {
+            const f = el("g", { stroke: "#ffffff", "stroke-width": 6, "stroke-linecap": "round", fill: "none" }, svg);
+            for (let k = 0; k < 3; k++) {
+              const arm = el("g", { transform: `rotate(${k * 60} 50 50)` }, f);
+              el("line", { x1: 50, y1: 12, x2: 50, y2: 88 }, arm);
+              el("polyline", { points: "40,20 50,30 60,20" }, arm);
+              el("polyline", { points: "40,80 50,70 60,80" }, arm);
+            }
+            info.flake = f;
+          }
+          icons.push(info);
+        };
+
+        const rows = document.getElementById("rows");
+        const rowEls = WEEK.map((w, i) => {
+          const r = document.createElement("div");
+          r.className = "row";
+          r.style.top = i * 110 + "px";
+          r.innerHTML = `<span class="day">${w.d}</span>`;
+          const svg = el("svg", { viewBox: "0 0 100 100" }, r);
+          makeIcon(svg, w.icon);
+          r.insertAdjacentHTML("beforeend", `<span class="sum">${w.sum}</span><span class="temps">${w.hi}° <span class="lo">/ ${w.lo}°</span></span>`);
+          rows.appendChild(r);
+          return r;
+        });
+
+        // ---------- timeline ----------
+        window.__timelines = window.__timelines || {};
+        const tl = gsap.timeline({ paused: true });
+        const END = 12;
+
+        // background clouds drift
+        [["#c1", 140], ["#c2", -110], ["#c3", 90], ["#c4", -130], ["#c5", 120]].forEach(([s, dx]) => {
+          tl.fromTo(s, { x: 0 }, { x: dx, duration: END, ease: "none" }, 0);
+        });
+
+        // header
+        tl.fromTo("#city", { opacity: 0, y: 40 }, { opacity: 1, y: 0, duration: 0.7, ease: "power3.out" }, 0.15);
+        tl.fromTo("#week", { opacity: 0, y: 30 }, { opacity: 1, y: 0, duration: 0.6, ease: "power3.out" }, 0.4);
+        tl.fromTo("#today", { opacity: 0, y: 30 }, { opacity: 1, y: 0, duration: 0.6, ease: "power3.out" }, 0.6);
+        tl.fromTo("#bigsun", { opacity: 0, scale: 0.4, rotation: -40 }, { opacity: 1, scale: 1, rotation: 0, duration: 1.0, ease: "back.out(1.6)" }, 0.2);
+        tl.fromTo("#sunrays", { rotation: 0 }, { rotation: 120, svgOrigin: "100 100", duration: END, ease: "none" }, 0);
+        tl.fromTo("#sunpulse", { scale: 0.92 }, { scale: 1.1, svgOrigin: "100 100", duration: 0.9, ease: "sine.inOut", yoyo: true, repeat: 12 }, 0);
+        tl.fromTo("#sunglow", { opacity: 0.55 }, { opacity: 1, duration: 0.9, ease: "sine.inOut", yoyo: true, repeat: 12 }, 0);
+
+        // chart
+        const C0 = 1.2, CD = 2.4;
+        tl.fromTo("#chartcard", { opacity: 0, y: 40 }, { opacity: 1, y: 0, duration: 0.6, ease: "power2.out" }, 0.9);
+        tl.fromTo("#revealRect", { attr: { width: 0 } }, { attr: { width: 972 }, duration: CD, ease: "none" }, C0);
+        WEEK.forEach((w, i) => {
+          const t = C0 + (xAt(i) / 972) * CD - 0.05;
+          const [hd, ld] = dotEls[i], [ht, lt, dl] = labelEls[i];
+          tl.fromTo([hd, ld], { attr: { r: 0 } }, { attr: { r: 13 }, duration: 0.45, ease: "back.out(3)" }, t);
+          tl.fromTo([ht, lt], { opacity: 0 }, { opacity: 1, duration: 0.2 }, t);
+          tl.fromTo(dl, { opacity: 0 }, { opacity: 1, duration: 0.3 }, t - 0.1);
+          const ctr = { hi: 0, lo: 0 };
+          tl.fromTo(ctr, { hi: 0, lo: 0 }, {
+            hi: w.hi, lo: w.lo, duration: 0.6, ease: "power1.out",
+            onUpdate: () => { ht.textContent = Math.round(ctr.hi) + "°"; lt.textContent = Math.round(ctr.lo) + "°"; },
+          }, t);
+        });
+
+        // rows slide in
+        rowEls.forEach((r, i) => {
+          tl.fromTo(r, { opacity: 0, x: i % 2 ? 260 : -260 }, { opacity: 1, x: 0, duration: 0.55, ease: "power3.out" }, 3.8 + i * 0.28);
+        });
+
+        // small icon loops (finite repeats covering the film)
+        icons.forEach((ic, i) => {
+          if (ic.type === "sun") {
+            tl.fromTo(ic.rays, { rotation: 0 }, { rotation: 180, svgOrigin: "50 50", duration: END, ease: "none" }, 0);
+          } else if (ic.type === "cloud") {
+            tl.fromTo(ic.cloudWrap, { x: -7 }, { x: 7, duration: 1.4, ease: "sine.inOut", yoyo: true, repeat: 8 }, 0);
+          } else if (ic.type === "rain") {
+            ic.drops.forEach((d, k) => {
+              tl.fromTo(d, { y: -8, opacity: 1 }, { y: 22, opacity: 0, duration: 0.7, ease: "power1.in", repeat: 16 }, (k * 0.23 + i * 0.1) % 0.7);
+            });
+          } else if (ic.type === "storm") {
+            tl.set(ic.bolt, { opacity: 0.35 }, 0);
+            tl.set(ic.flash, { opacity: 0 }, 0);
+            for (let t = 0.8; t < END; t += 1.6) {
+              tl.set(ic.bolt, { opacity: 1 }, t);
+              tl.set(ic.flash, { opacity: 0.55 }, t);
+              tl.set(ic.flash, { opacity: 0 }, t + 0.08);
+              tl.set(ic.bolt, { opacity: 0.5 }, t + 0.14);
+              tl.set(ic.bolt, { opacity: 1 }, t + 0.22);
+              tl.set(ic.flash, { opacity: 0.4 }, t + 0.22);
+              tl.set(ic.flash, { opacity: 0 }, t + 0.32);
+              tl.set(ic.bolt, { opacity: 0.35 }, t + 0.5);
+            }
+          } else if (ic.type === "snow") {
+            tl.fromTo(ic.flake, { rotation: 0 }, { rotation: 240, svgOrigin: "50 50", duration: END, ease: "none" }, 0);
+          }
+        });
+
+        // ending
+        tl.to("#content", { opacity: 0, y: -60, duration: 0.6, ease: "power2.in" }, 9.4);
+        tl.fromTo("#umbrella", { opacity: 0, y: 60, scale: 0.6 }, { opacity: 1, y: 0, scale: 1, duration: 0.7, ease: "back.out(1.8)" }, 9.7);
+        tl.fromTo("#end h2", { opacity: 0, y: 50 }, { opacity: 1, y: 0, duration: 0.7, ease: "power3.out" }, 9.85);
+        tl.fromTo("#end p", { opacity: 0 }, { opacity: 1, duration: 0.5 }, 10.3);
+        tl.fromTo("#enddrops line", { y: -10, opacity: 0 }, { y: 8, opacity: 1, duration: 0.6, ease: "none", stagger: 0.12, repeat: 2 }, 9.8);
+
+        window.__timelines["main"] = tl;
+      })();
+    </script>
+  </body>
+</html>

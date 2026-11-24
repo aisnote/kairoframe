@@ -1,0 +1,278 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <title>terminal-story</title>
+    <script src="https://cdn.jsdelivr.net/npm/gsap@3.14.2/dist/gsap.min.js"></script>
+    <style>
+      html, body { margin: 0; background: #0b0e14; }
+      #root {
+        position: relative; overflow: hidden; color: #e6e9ef;
+        font-family: "Inter", sans-serif;
+        background: radial-gradient(ellipse at 50% 40%, #1a2030 0%, #0b0e14 70%);
+      }
+      .clip { position: absolute; }
+
+      /* ---------- windows ---------- */
+      .win {
+        top: 110px; width: 860px; height: 860px;
+        background: #151922; border-radius: 18px;
+        box-shadow: 0 30px 80px rgba(0,0,0,.55), 0 0 0 1px rgba(255,255,255,.06);
+        overflow: hidden;
+      }
+      #editor { left: 80px; z-index: 2; }
+      #term { left: 980px; z-index: 2; background: #10131a; }
+      .bar {
+        position: absolute; left: 0; top: 0; right: 0; height: 64px;
+        background: #1c212c; border-bottom: 1px solid rgba(255,255,255,.06);
+      }
+      .dots { position: absolute; left: 24px; top: 23px; display: flex; gap: 10px; }
+      .dots i { width: 18px; height: 18px; border-radius: 50%; display: block; }
+      .dots i:nth-child(1) { background: #ff5f57; }
+      .dots i:nth-child(2) { background: #febc2e; }
+      .dots i:nth-child(3) { background: #28c840; }
+      .tab {
+        position: absolute; left: 120px; top: 12px; height: 52px; padding: 0 26px;
+        background: #151922; border-radius: 10px 10px 0 0;
+        font: 500 24px/52px "JetBrains Mono", monospace; color: #e6e9ef;
+      }
+      .tab b { color: #e8915a; font-weight: 700; margin-right: 10px; }
+      .title {
+        position: absolute; left: 0; right: 0; top: 0; text-align: center;
+        font: 500 24px/64px "JetBrains Mono", monospace; color: #8a93a6;
+      }
+
+      /* ---------- code ---------- */
+      .mono { font-family: "JetBrains Mono", monospace; font-size: 27px; }
+      #code { position: absolute; left: 0; top: 92px; right: 0; bottom: 0; }
+      .row { position: absolute; left: 0; height: 44px; line-height: 44px; white-space: pre; }
+      .ln { position: absolute; left: 0; width: 64px; text-align: right; color: #4b5366; opacity: 0; }
+      .src {
+        position: absolute; left: 92px; display: inline-block; overflow: hidden;
+        width: calc(var(--n, 0) * 1ch + 1px);
+      }
+      .caret {
+        position: absolute; width: 3px; height: 32px; background: #7cc4ff;
+        left: calc(var(--x0) + var(--col, 0) * 1ch); top: calc(var(--y0) + var(--row, 0) * 44px + 6px);
+      }
+      #ecaret { --x0: 92px; --y0: 0px; }
+      .t-tag { color: #ff7a90; }
+      .t-attr { color: #f3b562; }
+      .t-str { color: #a3d977; }
+      .t-num { color: #c39bff; }
+      .t-prop { color: #6cc7f0; }
+      .t-pun { color: #8a93a6; }
+
+      /* ---------- terminal ---------- */
+      #tout { position: absolute; left: 36px; top: 96px; right: 30px; }
+      #tout .row { left: 0; height: 46px; line-height: 46px; }
+      #tout .src { left: 0; position: relative; vertical-align: top; }
+      .pr { color: #28c840; }
+      .pr span { color: #7cc4ff; }
+      .ok { color: #28c840; }
+      .dim { color: #8a93a6; }
+      #tcaret { --x0: 36px; --y0: 96px; top: calc(var(--y0) + var(--row, 0) * 46px + 7px); width: 14px; background: #e6e9ef; }
+      .out { opacity: 0; }
+      .pbar {
+        display: inline-block; vertical-align: middle; width: 330px; height: 22px; margin: 0 16px 4px 0;
+        border-radius: 5px; background: #252b38; overflow: hidden; position: relative;
+      }
+      .pbar i {
+        position: absolute; left: 0; top: 0; bottom: 0; width: 100%;
+        background: linear-gradient(90deg, #6d5dfc, #ff6b9a);
+        transform-origin: 0 50%; transform: scaleX(0);
+      }
+
+      /* ---------- the finished card ---------- */
+      #cardwrap {
+        left: 400px; top: 170px; width: 1120px; height: 630px; z-index: 5;
+        border-radius: 22px; overflow: hidden;
+        box-shadow: 0 40px 120px rgba(0,0,0,.7), 0 0 0 1px rgba(255,255,255,.12);
+        opacity: 0;
+      }
+      #card {
+        position: absolute; left: 0; top: 0; width: 1920px; height: 1080px;
+        transform-origin: 0 0; transform: scale(0.58333);
+        background: linear-gradient(135deg, #6d5dfc, #ff6b9a);
+        display: flex; align-items: center; justify-content: center;
+      }
+      #card h1 { margin: 0; font: 700 160px "Inter", sans-serif; color: #fff; letter-spacing: -3px;
+        text-shadow: 0 8px 40px rgba(60,20,120,.35); }
+      #player {
+        left: 400px; top: 830px; width: 1120px; height: 40px; z-index: 5; opacity: 0;
+        display: flex; align-items: center; gap: 22px;
+        font: 500 26px "JetBrains Mono", monospace; color: #c9cfdb;
+      }
+      #player .play { width: 0; height: 0; border-left: 20px solid #fff; border-top: 12px solid transparent; border-bottom: 12px solid transparent; }
+      #player .track { flex: 1; height: 8px; border-radius: 4px; background: rgba(255,255,255,.18); position: relative; overflow: hidden; }
+      #player .track i { position: absolute; left: 0; top: 0; bottom: 0; width: 100%; background: #fff; transform-origin: 0 50%; transform: scaleX(0); }
+    </style>
+  </head>
+  <body>
+    <div id="root" data-composition-id="main" data-start="0" data-width="1920" data-height="1080" data-duration="14">
+
+      <div id="editor" class="clip win" data-start="0" data-duration="14">
+        <div class="bar">
+          <div class="dots"><i></i><i></i><i></i></div>
+          <div class="tab"><b>&lt;/&gt;</b>index.html</div>
+        </div>
+        <div id="code" class="mono"><div id="ecaret" class="caret"></div></div>
+      </div>
+
+      <div id="term" class="clip win" data-start="0" data-duration="14">
+        <div class="bar">
+          <div class="dots"><i></i><i></i><i></i></div>
+          <div class="title">zsh — title-card</div>
+        </div>
+        <div id="tout" class="mono">
+          <div class="row" style="top:0"><span class="pr">~/<span>title-card</span> $ </span><span class="src" id="cmd1">kairoframe check</span></div>
+          <div class="row out" id="o1" style="top:46px"><span class="ok">✓</span> 0 errors, 0 warnings</div>
+          <div class="row out" id="p2" style="top:92px"><span class="pr">~/<span>title-card</span> $ </span><span class="src" id="cmd2">kairoframe render -o title.mp4</span></div>
+          <div class="row out" id="o2" style="top:138px"><span class="dim">rendering </span><span class="pbar"><i id="pfill"></i></span><span id="fcount">0</span><span class="dim">/360 frames</span></div>
+          <div class="row out" id="o3" style="top:184px"><span class="ok">✓</span> done in 2.1 s <span class="dim">→ title.mp4</span></div>
+          <div class="row out" id="p3" style="top:230px"><span class="pr">~/<span>title-card</span> $ </span></div>
+        </div>
+        <div id="tcaret" class="caret mono"></div>
+      </div>
+
+      <div id="cardwrap" class="clip" data-start="10" data-duration="4">
+        <div id="card"><h1 id="hello">Hello, video.</h1></div>
+      </div>
+      <div id="player" class="clip" data-start="10" data-duration="4">
+        <div class="play"></div>
+        <span id="tc">00:00</span>
+        <div class="track"><i id="ptrack"></i></div>
+        <span class="dim">00:12 · title.mp4</span>
+      </div>
+    </div>
+
+    <script>
+      window.__timelines = window.__timelines || {};
+      const tl = gsap.timeline({ paused: true });
+
+      // ---------- the HTML that types itself ----------
+      const CODE = [
+        '<div id="card" data-composition-id="card"',
+        '     data-width="1920" data-height="1080"',
+        '     data-duration="12">',
+        '  <h1 class="clip" data-start="0.3"',
+        '      data-duration="11.7">Hello, video.</h1>',
+        '</div>',
+        '',
+        '<style>',
+        '  #card { background: linear-gradient(',
+        '    135deg, #6d5dfc, #ff6b9a); }',
+        '  h1 { font: 700 160px "Inter"; }',
+        '</style>',
+        '',
+        '<' + 'script>',
+        '  tl.from("h1", { scale: 0.8, opacity: 0,',
+        '                  duration: 0.6 }, 0.3);',
+        '</' + 'script>',
+      ];
+      const RX = /("\d+(?:\.\d+)?")|("[^"]*")|(<\/?[a-zA-Z][\w-]*|\/?>)|([a-zA-Z-]+(?==))|(#[0-9a-fA-F]{6})|(\d+(?:\.\d+)?(?:px|deg)?)|([a-zA-Z-]+(?=:))|(#[\w-]+)|([{}();,=:])/g;
+      const CLS = ["t-num", "t-str", "t-tag", "t-attr", "t-num", "t-num", "t-prop", "t-attr", "t-pun"];
+      const esc = (s) => s.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;");
+      function highlight(line) {
+        let out = "", last = 0, m;
+        RX.lastIndex = 0;
+        while ((m = RX.exec(line))) {
+          out += esc(line.slice(last, m.index));
+          const g = m.slice(1).findIndex((x) => x !== undefined);
+          out += `<span class="${CLS[g]}">${esc(m[0])}</span>`;
+          last = m.index + m[0].length;
+        }
+        return out + esc(line.slice(last));
+      }
+      const codeBox = document.getElementById("code");
+      CODE.forEach((line, i) => {
+        const row = document.createElement("div");
+        row.className = "row";
+        row.style.top = i * 44 + "px";
+        row.style.width = "100%";
+        row.innerHTML = `<span class="ln" id="ln${i}">${i + 1}</span><span class="src" id="l${i}">${highlight(line)}</span>`;
+        codeBox.insertBefore(row, codeBox.firstChild);
+      });
+
+      // ---------- intro ----------
+      tl.fromTo("#editor", { opacity: 0, y: 40 }, { opacity: 1, y: 0, duration: 0.6, ease: "power2.out" }, 0);
+      tl.fromTo("#term", { opacity: 0, y: 40 }, { opacity: 1, y: 0, duration: 0.6, ease: "power2.out" }, 0.15);
+
+      // ---------- typing in the editor: 0.6 s .. 4.7 s ----------
+      const busyE = [], busyT = [];
+      const total = CODE.reduce((a, l) => a + Math.max(l.length, 1), 0);
+      const perChar = (4.7 - 0.6 - CODE.length * 0.04) / total;
+      let t = 0.6;
+      CODE.forEach((line, i) => {
+        const n = line.length;
+        tl.set(`#ln${i}`, { opacity: 1 }, t);
+        tl.set("#ecaret", { "--row": i, "--col": 0 }, t);
+        if (n > 0) {
+          const d = n * perChar;
+          tl.fromTo(`#l${i}`, { "--n": 0 }, { "--n": n, duration: d, ease: `steps(${n})` }, t);
+          tl.fromTo("#ecaret", { "--col": 0 }, { "--col": n, duration: d, ease: `steps(${n})`, immediateRender: false }, t);
+          t += d;
+        } else {
+          t += perChar;
+        }
+        t += 0.04;
+      });
+      busyE.push([0.6, t]);
+
+      // ---------- terminal ----------
+      const P = 15; // "~/title-card $ "
+      tl.set("#tcaret", { "--row": 0, "--col": P }, 0);
+      function typeCmd(sel, row, start, n, d) {
+        tl.set("#tcaret", { "--row": row, "--col": P }, start);
+        tl.fromTo(sel, { "--n": 0 }, { "--n": n, duration: d, ease: `steps(${n})` }, start);
+        tl.fromTo("#tcaret", { "--col": P }, { "--col": P + n, duration: d, ease: `steps(${n})`, immediateRender: false }, start);
+        busyT.push([start, start + d + 0.25]);
+      }
+      typeCmd("#cmd1", 0, 5.0, 16, 0.7);
+      tl.set("#o1", { opacity: 1 }, 5.95);
+      tl.set("#p2", { opacity: 1 }, 6.2);
+      tl.set("#tcaret", { "--row": 2, "--col": P }, 6.2);
+      typeCmd("#cmd2", 2, 7.0, 30, 0.95);
+      // render: 8.1 s .. 10.2 s
+      tl.set("#o2", { opacity: 1 }, 8.1);
+      tl.set("#tcaret", { opacity: 0 }, 8.1);
+      busyT.push([8.1, 10.3]);
+      tl.fromTo("#pfill", { scaleX: 0 }, { scaleX: 1, duration: 2.1, ease: "none" }, 8.1);
+      const STEPS = 60;
+      for (let k = 1; k <= STEPS; k++) {
+        const f = Math.round((360 * k) / STEPS);
+        tl.set("#fcount", { textContent: String(f) }, 8.1 + (2.1 * k) / STEPS);
+      }
+      tl.set("#o3", { opacity: 1 }, 10.25);
+      tl.set("#p3", { opacity: 1 }, 10.3);
+      tl.set("#tcaret", { "--row": 5, "--col": P }, 10.3);
+
+      // ---------- caret blink, from the timeline ----------
+      function blink(sel, busy, from, to) {
+        const isBusy = (x) => busy.some(([a, b]) => x >= a && x < b);
+        for (let x = from; x < to; x = Math.round((x + 0.5) * 100) / 100) {
+          const on = isBusy(x) || Math.floor((x - from) / 0.5) % 2 === 0;
+          tl.set(sel, { opacity: on ? 1 : 0 }, x);
+        }
+      }
+      blink("#ecaret", busyE, 0, 14);
+      blink("#tcaret", busyT, 0, 8.1);
+      blink("#tcaret", [], 10.3, 14);
+      // keep the caret solid at every busy start (blink sets above may land just before)
+      busyE.concat(busyT).forEach(([a]) => { if (a !== 8.1) tl.set(a < 4.9 ? "#ecaret" : "#tcaret", { opacity: 1 }, a); });
+
+      // ---------- 10.5 s: windows step aside, the card plays ----------
+      const out = { duration: 1.0, ease: "power3.inOut" };
+      tl.to("#editor", { scale: 0.6, x: -330, y: 10, opacity: 0.45, ...out }, 10.5);
+      tl.to("#term", { scale: 0.6, x: 330, y: 10, opacity: 0.45, ...out }, 10.5);
+      tl.fromTo("#cardwrap", { opacity: 0, scale: 0.2 }, { opacity: 1, scale: 1, duration: 1.0, ease: "power3.out" }, 10.6);
+      tl.fromTo("#player", { opacity: 0, y: 20 }, { opacity: 1, y: 0, duration: 0.5, ease: "power2.out" }, 11.2);
+      // the card's own animation, as written in the code: starts 0.3 s into playback
+      tl.fromTo("#hello", { scale: 0.8, opacity: 0 }, { scale: 1, opacity: 1, duration: 0.6 }, 10.9 + 0.3);
+      tl.fromTo("#ptrack", { scaleX: 0 }, { scaleX: 3.1 / 12, duration: 3.1, ease: "none" }, 10.9);
+      [1, 2, 3].forEach((s) => tl.set("#tc", { textContent: "00:0" + s }, 10.9 + s));
+
+      window.__timelines["main"] = tl;
+    </script>
+  </body>
+</html>

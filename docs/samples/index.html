@@ -1,0 +1,78 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>KairoFrame samples</title>
+<meta name="description" content="Films written from one prompt by a coding agent and rendered by KairoFrame, with prompts, tokens, cost and render times." />
+<meta property="og:title" content="KairoFrame samples" />
+<meta property="og:description" content="Films written from one prompt by a coding agent and rendered by KairoFrame, with prompts, tokens, cost and render times." />
+<meta property="og:image" content="https://aisnote.github.io/kairoframe/samples/aurora-launch/poster.jpg" />
+<meta name="twitter:card" content="summary_large_image" />
+<link rel="icon" href="../icon.png" />
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500&display=swap" />
+<link rel="stylesheet" href="../samples/samples.css" />
+</head>
+<body>
+<div class="wrap">
+  <nav>
+    <a class="brand" href="../"><img src="../icon.png" alt="" />KairoFrame</a>
+    <div class="links"><a class="opt" href="../#speed">Speed</a><a class="opt" href="../#agents">Agents</a><a href="../samples/">Samples</a>
+      <a href="https://github.com/aisnote/kairoframe">GitHub</a></div>
+  </nav>
+  <h1>Samples, <span class="grad">written by an agent</span>,<br />rendered by KairoFrame</h1>
+  <p class="lead">Each film below was written from one prompt by a fresh Claude Code session in an empty <code>kairoframe init</code> project,
+    with no hand edits, then rendered by KairoFrame. Every page shows the prompt, the tokens and cost of writing it, and how long the render took,
+    so you can make it again.</p>
+  <div class="stats" style="margin:0 0 34px">
+    <div class="stat"><b>6</b><span>films, 75 s of video</span></div>
+    <div class="stat"><b>21 s</b><span>to render them all</span></div>
+    <div class="stat"><b>$6.01</b><span>LLM cost to write them all</span></div>
+    <div class="stat"><b>0</b><span>lines edited by hand</span></div>
+  </div>
+  <div class="grid">
+    <a class="card" href="aurora-launch/" target="_blank" rel="noopener">
+      <div class="thumb"><img src="aurora-launch/poster.jpg" alt="Frame from Aurora launch title" loading="lazy" /><span class="play"></span></div>
+      <div class="body"><h2>Aurora launch title</h2><p>Kinetic typography and a living gradient for a product launch.</p>
+        <div class="tags"><span class="tag">12 s &middot; 1920&times;1080</span>
+          <span class="tag k">rendered in <b>3.0 s</b></span><span class="tag">LLM <b>$0.84</b></span></div></div>
+    </a>
+    <a class="card" href="chart-race/" target="_blank" rel="noopener">
+      <div class="thumb"><img src="chart-race/poster.jpg" alt="Frame from Bar chart race" loading="lazy" /><span class="play"></span></div>
+      <div class="body"><h2>Bar chart race</h2><p>24 months of data, bars that overtake each other, numbers that count up.</p>
+        <div class="tags"><span class="tag">15 s &middot; 1920&times;1080</span>
+          <span class="tag k">rendered in <b>3.2 s</b></span><span class="tag">LLM <b>$1.03</b></span></div></div>
+    </a>
+    <a class="card" href="motion-blur/" target="_blank" rel="noopener">
+      <div class="thumb"><img src="motion-blur/poster.jpg" alt="Frame from Motion blur, side by side" loading="lazy" /><span class="play"></span></div>
+      <div class="body"><h2>Motion blur, side by side</h2><p>The same fast move twice: plain on the left, KairoFrame motion blur on the right.</p>
+        <div class="tags"><span class="tag">10 s &middot; 1920&times;1080</span>
+          <span class="tag k">rendered in <b>6.3 s</b></span><span class="tag">LLM <b>$1.02</b></span></div></div>
+    </a>
+    <a class="card" href="orbital-3d/" target="_blank" rel="noopener">
+      <div class="thumb"><img src="orbital-3d/poster.jpg" alt="Frame from Orbital, in Three.js" loading="lazy" /><span class="play"></span></div>
+      <div class="body"><h2>Orbital, in Three.js</h2><p>A WebGL scene from Three.js, driven frame by frame by the film&#x27;s clock.</p>
+        <div class="tags"><span class="tag">12 s &middot; 1920&times;1080</span>
+          <span class="tag k">rendered in <b>2.7 s</b></span><span class="tag">LLM <b>$1.10</b></span></div></div>
+    </a>
+    <a class="card" href="terminal-story/" target="_blank" rel="noopener">
+      <div class="thumb"><img src="terminal-story/poster.jpg" alt="Frame from From HTML to MP4" loading="lazy" /><span class="play"></span></div>
+      <div class="body"><h2>From HTML to MP4</h2><p>A code editor and a terminal tell how a KairoFrame film is made.</p>
+        <div class="tags"><span class="tag">14 s &middot; 1920&times;1080</span>
+          <span class="tag k">rendered in <b>2.6 s</b></span><span class="tag">LLM <b>$0.98</b></span></div></div>
+    </a>
+    <a class="card" href="weather-vertical/" target="_blank" rel="noopener">
+      <div class="thumb portrait"><img src="weather-vertical/poster.jpg" alt="Frame from Weekly weather, 9:16" loading="lazy" /><span class="play"></span></div>
+      <div class="body"><h2>Weekly weather, 9:16</h2><p>A vertical social card: animated icons, a temperature line that draws itself.</p>
+        <div class="tags"><span class="tag">12 s &middot; 1080&times;1920</span>
+          <span class="tag k">rendered in <b>3.0 s</b></span><span class="tag">LLM <b>$1.03</b></span></div></div>
+    </a>
+  </div>
+  <p class="note" style="margin-top:22px">Rendered with KairoFrame v0.3.1 for Linux on AMD Ryzen 9 9900X3D (12 cores), NVIDIA RTX 5090, Ubuntu 24.04. Costs are list prices from the session's usage report.</p>
+</div>
+<footer><div class="wrap"><span>&copy; 2026 KairoFrame</span><span><a href="https://github.com/aisnote/kairoframe">GitHub</a> &middot;
+  <a href="https://github.com/aisnote/kairoframe/releases">Releases</a> &middot; Hyperframes is a project of HeyGen; KairoFrame is independent of it.</span></div></footer>
+
+</body>
+</html>

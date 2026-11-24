@@ -1,0 +1,97 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>From HTML to MP4 — KairoFrame sample</title>
+<meta name="description" content="A code editor and a terminal tell how a KairoFrame film is made." />
+<meta property="og:title" content="From HTML to MP4 — KairoFrame sample" />
+<meta property="og:description" content="A code editor and a terminal tell how a KairoFrame film is made." />
+<meta property="og:image" content="https://aisnote.github.io/kairoframe/samples/terminal-story/poster.jpg" />
+<meta name="twitter:card" content="summary_large_image" />
+<link rel="icon" href="../../icon.png" />
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500&display=swap" />
+<link rel="stylesheet" href="../../samples/samples.css" />
+</head>
+<body>
+<div class="wrap">
+  <nav>
+    <a class="brand" href="../../"><img src="../../icon.png" alt="" />KairoFrame</a>
+    <div class="links"><a class="opt" href="../../#speed">Speed</a><a class="opt" href="../../#agents">Agents</a><a href="../../samples/">Samples</a>
+      <a href="https://github.com/aisnote/kairoframe">GitHub</a></div>
+  </nav>
+  <a class="back" href="../">&larr; All samples</a>
+  <h1>From HTML to MP4</h1>
+  <p class="lead">A code editor and a terminal tell how a KairoFrame film is made.</p>
+  <div class="video"><video src="video.mp4" poster="poster.jpg" controls playsinline preload="metadata"></video></div>
+  <div class="stats">
+    <div class="stat"><b>2.6 s</b><span>to render (5.4&times; real time)</span></div>
+    <div class="stat"><b>14 s</b><span>1920&times;1080, 30 fps, 420 frames</span></div>
+    <div class="stat"><b>$0.98</b><span>LLM cost to write it (Claude Opus 5.5)</span></div>
+    <div class="stat"><b>16,199</b><span>output tokens, 27 turns</span></div>
+  </div>
+
+  <section>
+    <div class="prompt-head"><h3 style="margin:0">The prompt</h3><button class="copy" type="button" data-copy="prompt">Copy prompt</button></div>
+    <p class="note" style="margin:0 0 12px">Given word for word to a fresh Claude Code session in an empty project made by <code>kairoframe init</code>. The session wrote <a href="project/index.html">index.html</a>; nothing was edited by hand.</p>
+    <pre id="prompt">Make a 14-second film that shows how KairoFrame turns HTML into video. Left half: a dark code editor window (macOS-style traffic-light dots, file tab &quot;index.html&quot;) in which HTML for a small title card types itself line by line with syntax highlighting (tags, attributes such as data-start and data-duration, strings, numbers) and a blinking caret driven by the timeline. Right half: a terminal window where, at 5 s, the command `kairoframe check` is typed and answers &quot;0 errors, 0 warnings&quot;, then at 7 s `kairoframe render -o title.mp4` is typed, a progress bar fills with a frame counter going to 360 frames, and &quot;done in 2.1 s&quot; appears. At 10.5 s both windows scale down and slide apart and the finished title card from the code (big text &quot;Hello, video.&quot; on a gradient) zooms forward in the middle as if it were playing. Use JetBrains Mono for code and a clean sans-serif for the card.
+
+Work in this folder (a kairoframe project made by `kairoframe init`; read AGENTS.md). Check your work with `kairoframe check` and look at `kairoframe sheet`; fix what is wrong. Do not run `kairoframe render`: the film will be rendered separately.</pre>
+  </section>
+
+  <section class="cols">
+    <div>
+      <h3>Tokens and cost</h3>
+      <div class="box"><table>
+        <tr><th>Claude Opus 5.5</th><th>tokens</th></tr><tr><td>Input, not cached</td><td>40</td></tr><tr><td>Cache writes</td><td>57,456</td></tr><tr><td>Cache reads</td><td>997,634</td></tr><tr><td>Output (with thinking)</td><td>16,199</td></tr>
+        <tr class="total"><td>Input in all</td><td>1,055,130</td></tr>
+      </table></div>
+      <div class="box" style="margin-top:14px"><table>
+        <tr><th>Cost</th><th>USD</th></tr>
+        <tr class="total"><td>Measured, Claude Opus 5.5 at list price</td><td>$0.98</td></tr><tr><td>Claude Sonnet 5.5, same tokens (estimate)</td><td>$0.49</td></tr><tr><td>Claude Fable 5.2, same tokens (estimate)</td><td>$1.77</td></tr>
+      </table></div>
+      <p class="note">From the session's own usage report (<code>claude -p --output-format json</code>). The estimates price the same token counts at
+        the other models' list prices; another model would not use exactly the same tokens. The session took 3.1 minutes.</p>
+    </div>
+    <div>
+      <h3>Render</h3>
+      <div class="box"><table>
+        <tr><th>Compose</th><th></th></tr>
+        <tr><td>Render time (median of 3)</td><td>2.57 s</td></tr>
+        <tr><td>All three runs</td><td>2.57 / 2.69 / 2.56 s</td></tr>
+        <tr><td>Film length</td><td>14.00 s</td></tr>
+        <tr><td>Speed</td><td>5.4&times; real time</td></tr>
+        <tr><td>Frames</td><td>420 at 30 fps</td></tr>
+        <tr><td>File</td><td>1.6 MB, H.264</td></tr>
+      </table></div>
+      <p class="note">KairoFrame v0.3.1 for Linux, <code>kairoframe render -o render.mp4 --crf 23</code> (standard quality, CRF 23 for a smaller web file),
+        wall-clock time including the browser start. Machine: AMD Ryzen 9 9900X3D (12 cores), NVIDIA RTX 5090, Ubuntu 24.04.</p>
+    </div>
+  </section>
+
+  <section>
+    <h3>Make it yourself</h3>
+    <div class="steps">
+      <div class="step"><b>1. Install KairoFrame and Claude Code</b><pre>curl -fsSL https://raw.githubusercontent.com/aisnote/kairoframe/main/install.sh | bash</pre></div>
+      <div class="step"><b>2. Start an empty project and save the prompt above as prompt.txt in it</b><pre>kairoframe init terminal-story --duration 14
+cd terminal-story</pre></div>
+      <div class="step"><b>3. Let Claude write the film</b><pre>claude -p &quot;$(cat prompt.txt)&quot; --model opus \
+  --permission-mode acceptEdits \
+  --allowedTools &quot;Read,Write,Edit,Glob,Grep,Bash(kairoframe:*),Bash(ls:*)&quot;</pre></div>
+      <div class="step"><b>4. Render</b><pre>kairoframe render -o terminal-story.mp4 --crf 23</pre></div>
+    </div>
+    <p class="note">Or skip steps 2 and 3: download this sample's <a href="project/index.html">index.html</a> into a folder and run step 4 there.
+      A new session writes a different film each time; the cost of a run lands in the same range.</p>
+  </section>
+</div>
+<footer><div class="wrap"><span>&copy; 2026 KairoFrame</span><span><a href="https://github.com/aisnote/kairoframe">GitHub</a> &middot;
+  <a href="https://github.com/aisnote/kairoframe/releases">Releases</a> &middot; Hyperframes is a project of HeyGen; KairoFrame is independent of it.</span></div></footer>
+<script>
+document.querySelectorAll('.copy').forEach(b => b.addEventListener('click', () => {
+  const t = document.getElementById(b.dataset.copy).textContent;
+  const done = () => { b.textContent = 'Copied'; b.classList.add('done'); setTimeout(() => { b.textContent = 'Copy prompt'; b.classList.remove('done'); }, 1800); };
+  if (navigator.clipboard) navigator.clipboard.writeText(t).then(done, () => {}); }));
+</script>
+</body>
+</html>
