@@ -1,12 +1,12 @@
 # ScreenCap（测试版）— 鼠标触发截帧 + 鼠标轨迹记录
 
-Windows 原生截屏工具：Win32 + DXGI Desktop Duplication 截屏，WIC 存 PNG，Media Foundation 调显卡硬件编码视频。截下来的帧不带系统光标，鼠标按完整轨迹单独记录，后期合成视频时重绘鼠标动画。
+Windows 原生截屏工具：Win32 + DXGI Desktop Duplication 截屏，WIC 存 PNG，Media Foundation 调显卡硬件编码视频，WASAPI 录电脑声音和麦克风。截下来的帧不带系统光标，鼠标按完整轨迹单独记录，后期合成视频时重绘鼠标动画。
 
 ## 下载
 
 Windows 10 2004+ / Windows 11，64 位。单文件 `screencap.exe`，不需要安装，不依赖其他 DLL。
 
-SHA-256: `252f138cae37affab0e40a309e38d1b2750d5e14831413fb8c0d931b7cac5012`
+SHA-256: `36648cdaeb023b391432a6f529e5a49c9a8d4fe8d980d6a86eaf07970d34b811`
 
 ## 使用
 
@@ -18,6 +18,7 @@ SHA-256: `252f138cae37affab0e40a309e38d1b2750d5e14831413fb8c0d931b7cac5012`
 | 暂停 / 继续 | 暂停期间不记录、不截帧 |
 | 结束 | 等待写盘和视频收尾完成后关闭会话 |
 | 连续截: 开/关 | 打开后按 30fps 连续截帧 |
+| 录音: 开/关 | 同时录电脑声音和麦克风（可先打开再点「开始」；暂停时录音也停） |
 | 目录 | 打开输出目录 |
 
 截帧规则：
@@ -31,6 +32,16 @@ SHA-256: `252f138cae37affab0e40a309e38d1b2750d5e14831413fb8c0d931b7cac5012`
 - **连续截打开时**：点击和滚轮不额外截帧，只把事件 id 标到下一帧的 `events` 里，时间轴保持均匀。
 - **截取范围**：鼠标下那个窗口所在的整个显示器，支持多显示器。
 - 在控制小窗上的点击会被忽略。侧键（x1/x2）只记录，不截帧。
+
+## 录音
+
+- **电脑声音**：录 Windows 默认播放设备正在播放的声音（WASAPI loopback）。**麦克风**：录默认录音设备。两路分别存成 16 位 PCM WAV，采样率和声道数跟设备一致，方便后期单独调音量、混音。
+- **跟截帧对齐**：每个音频包都带硬件时间戳，跟截帧用同一条时钟（QPC）。电脑没出声的时候 Windows 不送数据，这段会自动补静音。所以 WAV 的第 n 个采样点就在 `audio_start.t_us + n / sample_rate`，直接对得上 `frames.jsonl` 的 `t_us`。
+- 每次打开录音（或暂停后继续）是一段 `s0001`、`s0002`……
+- 设备被拔掉或格式变了，会自动重连当时的默认设备，另起一个文件 `p2`、`p3`……，并在记录里写明。
+- WAV 文件头每秒更新一次，程序崩溃时已录的部分也能正常播放。
+- 占用：48 kHz 立体声约 11 MB/分钟/路。
+- 找不到设备（比如没插麦克风）时，只在记录里写 `audio_error`，状态栏显示 ✗，其他功能不受影响。
 
 ## 占用空间（4K，30fps）
 
@@ -59,6 +70,10 @@ OutputDir=            ; 空 = exe 目录\captures
 VideoCodec=h264       ; h264 | hevc | off（off = 连续帧也存 PNG）
 VideoBitrateMbps=0    ; 0 = 自动
 MaxEncodeQueueMB=2048 ; PNG 写盘队列内存上限
+AudioSystem=1         ; 录音按钮是否录电脑声音
+AudioMic=1            ; 录音按钮是否录麦克风
+AudioSystemDevice=    ; 空 = 默认播放设备，否则填设备名的一部分，如 Realtek
+AudioMicDevice=       ; 空 = 默认录音设备，否则填设备名的一部分，如 USB
 ```
 
 ## 输出格式
@@ -71,6 +86,8 @@ captures/session_20261123_204818/
   cursors.jsonl    出现过的光标形状（PNG + 热点）
   frames/000000.png ...      点击帧
   video/seg_0001_m0.mp4 ...  连续截 / 滚轮帧（seg = 段号，m = 显示器）
+  audio/system_s0001_p1.wav  电脑声音（s = 录音段，p = 分片）
+  audio/mic_s0001_p1.wav     麦克风
   cursors/c1.png ...
 ```
 
@@ -93,6 +110,7 @@ captures/session_20261123_204818/
 - 会话控制：`session_start` `pause` `resume` `session_stop`
 - 连续截：`continuous_start` `continuous_stop`（带 `segment`）
 - 视频：`video_start`（记录用了哪个编码器、是否硬件、码率、分辨率）
+- 音频：`audio_start`（`t_us` = 该 WAV 第 0 个采样的时间，含设备名、采样率、声道）、`audio_stop`（时长、补了多少静音）、`audio_error`
 - 异常：`video_fallback`（编码器不可用，改存 PNG）、`capture_failed`
 
 ## 实现要点
@@ -102,14 +120,15 @@ captures/session_20261123_204818/
 - 点击帧画面不变时只读回一次显存。PNG 编码在后台线程池里做，有内存上限。
 - 全局鼠标钩子 `WH_MOUSE_LL` 跑在独立的最高优先级线程上，回调里只打时间戳、入队。
 - 30fps 定时用高精度可等待定时器，按绝对时间对齐，不累积漂移。
+- 录音每路一个最高优先级线程，每 10ms 取一次数据，按包的 QPC 时间戳补静音或丢弃，保持跟时间轴对齐。
 
 ## 自测
 
 ```bat
-screencap.exe --selftest <输出目录> [--synthetic] [--seconds N] [--codec h264|hevc|off]
+screencap.exe --selftest <输出目录> [--synthetic] [--seconds N] [--codec h264|hevc|off] [--audio]
 ```
-新机器上建议先跑：`screencap.exe --selftest C:\temp\sc_test --seconds 10`，会截真实屏幕。然后看 `selftest.txt` 里的帧数和丢帧数，再看 `events.jsonl` 里的 `video_start`，确认 `"hardware":true`，也就是用的是显卡编码。
-不产生真实鼠标输入，用合成事件走完整流程：3 次点击、4 格滚轮、N 秒连续截（中间带一次点击）。结果写到 `<输出目录>\selftest.txt`，包括帧数、PNG 和 MP4 的大小、每分钟视频占用、丢帧数。
+不产生真实鼠标输入，用合成事件走完整流程：3 次点击、4 格滚轮、N 秒连续截（中间带一次点击）。结果写到 `<输出目录>\selftest.txt`，包括帧数、PNG 和 MP4 的大小、每分钟视频占用、丢帧数。加 `--audio` 时还会同时录音，并列出每个 WAV 的采样率、声道、时长和峰值音量。
+新机器上建议先跑：`screencap.exe --selftest C:\temp\sc_test --seconds 10 --audio`（测试期间可以放点声音、对着麦克风说话），会截真实屏幕。然后看 `selftest.txt` 里的帧数、丢帧数和每个 WAV 的峰值音量，再看 `events.jsonl` 里的 `video_start`，确认 `"hardware":true`，也就是用的是显卡编码。
 `--synthetic` 用软件生成的 4K 画面代替显示器，适用于没有活动桌面的环境（例如已断开的远程桌面会话）。
 
 ## 已知限制
@@ -119,3 +138,6 @@ screencap.exe --selftest <输出目录> [--synthetic] [--seconds N] [--codec h26
 - MP4 在「结束」时才写完。程序崩溃时，正在写的那一段视频会损坏，PNG 和记录文件不受影响。
 - 旋转显示器和奇数分辨率显示器的连续帧会改存 PNG。旋转方向的转换未在真机上验证。
 - HDR 显示器输出为转换后的 SDR（8 位 BGRA）。
+- 录音过程中在 Windows 里切换默认播放或录音设备，不会自动跟过去，要等下一次打开录音才生效（拔掉设备则会自动切换）。
+- 麦克风需要在 Windows「设置 → 隐私 → 麦克风」里允许桌面应用访问，否则录到的是静音或报错。
+- 远程桌面会话里只能录到远程桌面重定向的音频设备。
