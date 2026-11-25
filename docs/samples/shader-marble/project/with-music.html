@@ -1,0 +1,25 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <title>shader-marble with music</title>
+    <script src="https://cdn.jsdelivr.net/npm/gsap@3.14.2/dist/gsap.min.js"></script>
+    <style>
+      html, body { margin: 0; background: #000; }
+      #root { position: relative; overflow: hidden; background: #000; }
+      #film { position: absolute; left: 0; top: 0; width: 1920px; height: 1080px; }
+    </style>
+  </head>
+  <body>
+    <!-- Music: “Deep Haze” Kevin MacLeod (incompetech.com), licensed under Creative Commons: By Attribution 4.0 License, http://creativecommons.org/licenses/by/4.0/ -->
+    <div id="root" data-composition-id="main" data-start="0" data-width="1920" data-height="1080" data-duration="10">
+      <video id="film" class="clip" src="assets/film.mp4" muted data-start="0" data-duration="10"></video>
+      <audio id="music" src="assets/music.mp3" data-start="0" data-duration="10" data-media-start="0"
+             data-volume="1.349" data-fade-out="1.5"></audio>
+    </div>
+    <script>
+      window.__timelines = window.__timelines || {};
+      window.__timelines["main"] = gsap.timeline({ paused: true });
+    </script>
+  </body>
+</html>
