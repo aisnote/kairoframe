@@ -26,7 +26,7 @@
   <p class="lead">A vertical social card: animated icons, a temperature line that draws itself.</p>
   <div class="video portrait"><video src="video.mp4" poster="poster.jpg" controls playsinline preload="metadata"></video></div>
   <div class="stats">
-    <div class="stat"><b>3.0 s</b><span>to render (4.0&times; real time)</span></div>
+    <div class="stat"><b>2.2 s</b><span>to render with the patched Chrome; 2.9 s with the official one (1.30&times;)</span></div>
     <div class="stat"><b>12 s</b><span>1080&times;1920, 30 fps, 360 frames</span></div>
     <div class="stat"><b>$1.03</b><span>LLM cost to write it (Claude Opus 5.5)</span></div>
     <div class="stat"><b>20,016</b><span>output tokens, 31 turns</span></div>
@@ -57,16 +57,20 @@ Work in this folder (a kairoframe project made by `kairoframe init`; read AGENTS
     <div>
       <h3>Render</h3>
       <div class="box"><table>
-        <tr><th>Compose</th><th></th></tr>
-        <tr><td>Render time (median of 3)</td><td>2.98 s</td></tr>
-        <tr><td>All three runs</td><td>2.96 / 2.98 / 2.98 s</td></tr>
-        <tr><td>Film length</td><td>12.00 s</td></tr>
-        <tr><td>Speed</td><td>4.0&times; real time</td></tr>
+        <tr><th>Render time, median of 3</th><th></th></tr>
+        <tr><td>Official Chrome</td><td>2.87 s</td></tr>
+        <tr><td>&nbsp;&nbsp;three runs</td><td>2.95 / 2.86 / 2.87 s</td></tr>
+        <tr><td>Patched Chrome (fast browser)</td><td>2.21 s</td></tr>
+        <tr><td>&nbsp;&nbsp;three runs</td><td>2.16 / 2.21 / 2.21 s</td></tr>
+        <tr class="total"><td>Patched vs official</td><td>1.30&times; faster</td></tr>
+        <tr><td>Same picture? (PSNR of the two films)</td><td>48.0 dB</td></tr>
+        <tr><td>Film length</td><td>12.00 s (5.4&times; real time, patched)</td></tr>
         <tr><td>Frames</td><td>360 at 30 fps</td></tr>
         <tr><td>File</td><td>2.7 MB, H.264</td></tr>
       </table></div>
-      <p class="note">KairoFrame v0.3.1 for Linux, <code>kairoframe render -o render.mp4 --crf 23</code> (standard quality, CRF 23 for a smaller web file),
-        wall-clock time including the browser start. Machine: AMD Ryzen 9 9900X3D (12 cores), NVIDIA RTX 5090, Ubuntu 24.04.</p>
+      <p class="note">Rendered on Linux: Ubuntu 24.04 (Linux x86-64), AMD Ryzen 9 9900X3D (12 cores, 24 threads), NVIDIA GeForce RTX 5090 (H.264 encoding with NVENC), 64 GB. KairoFrame v0.3.2 for Linux,
+        <code>kairoframe render -o render.mp4 --crf 23</code>, wall-clock time including the browser start. Official Chrome: Google Chrome for Testing 152.0.7977.30 (headless shell, what the installer sets up).
+        Patched Chrome: Chromium 152.0.7977.30 with KairoFrame&#x27;s raw-frames patch (the fast browser, --engine fast), official build. The two browsers alternated, three runs each. The video on this page was rendered with the official Chrome.</p>
     </div>
   </section>
 
